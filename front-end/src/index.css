@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+@layer base {
+  html {
+    @apply bg-stone-50;
+  }
+  body {
+    @apply bg-stone-50 text-slate-900 antialiased;
+  }
+  a {
+    @apply underline-offset-4;
+  }
+  ::selection {
+    @apply bg-amber-100;
+  }
+}

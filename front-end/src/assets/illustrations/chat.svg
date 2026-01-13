@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" fill="none">
+  <rect x="18" y="18" width="604" height="384" rx="28" fill="#FFFBEB" stroke="#E7E5E4" stroke-width="4"/>
+
+  <path d="M182 126c0-22.091 17.909-40 40-40h196c22.091 0 40 17.909 40 40v108c0 22.091-17.909 40-40 40H300l-52 40v-40h-26c-22.091 0-40-17.909-40-40V126z" fill="#FFFFFF" stroke="#E7E5E4" stroke-width="4"/>
+
+  <rect x="224" y="142" width="250" height="16" rx="8" fill="#0F172A" opacity="0.10"/>
+  <rect x="224" y="172" width="210" height="12" rx="6" fill="#0F172A" opacity="0.08"/>
+
+  <g opacity="0.95">
+    <rect x="224" y="210" width="178" height="40" rx="14" fill="#F59E0B" opacity="0.22"/>
+    <rect x="238" y="224" width="132" height="12" rx="6" fill="#92400E" opacity="0.30"/>
+
+    <rect x="296" y="260" width="178" height="40" rx="14" fill="#0F172A" opacity="0.08"/>
+    <rect x="310" y="274" width="132" height="12" rx="6" fill="#0F172A" opacity="0.18"/>
+  </g>
+
+  <path d="M138 340h364" stroke="#0F172A" stroke-opacity="0.06" stroke-width="10" stroke-linecap="round"/>
+</svg>
