@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { User } from '../types'
-import { mockApi } from '../api/mockApi'
+import { api } from '../api/api'
 import { readJson, writeJson } from '../lib/storage'
 
 type AuthState = {
@@ -8,8 +8,9 @@ type AuthState = {
   isLoading: boolean
   error: string | null
 
-  login: (identifier: string) => Promise<void>
-  logout: () => void
+  register: (params: { email?: string; phone?: string; password: string; displayName: string }) => Promise<void>
+  login: (identifier: string, password: string) => Promise<void>
+  logout: () => Promise<void>
   updateProfile: (patch: Partial<User>) => Promise<void>
 }
 
@@ -20,18 +21,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  async login(identifier) {
+  async register(params) {
     set({ isLoading: true, error: null })
     try {
-      const user = await mockApi.login({ identifier })
-      writeJson(AUTH_KEY, user)
-      set({ user, isLoading: false })
+      const response = await api.register(params)
+      writeJson(AUTH_KEY, response.user)
+      set({ user: response.user, isLoading: false })
     } catch (e) {
       set({ isLoading: false, error: (e as Error).message })
     }
   },
 
-  logout() {
+  async login(identifier, password) {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await api.login({ identifier, password })
+      writeJson(AUTH_KEY, response.user)
+      set({ user: response.user, isLoading: false })
+    } catch (e) {
+      set({ isLoading: false, error: (e as Error).message })
+    }
+  },
+
+  async logout() {
+    try {
+      await api.logout()
+    } catch (e) {
+      // Ignore logout errors
+    }
     writeJson(AUTH_KEY, null)
     set({ user: null })
   },
@@ -41,7 +58,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!current) return
     set({ isLoading: true, error: null })
     try {
-      const updated = await mockApi.updateProfile(current.id, patch)
+      const updated = await api.updateProfile(current.id, patch)
       writeJson(AUTH_KEY, updated)
       set({ user: updated, isLoading: false })
     } catch (e) {

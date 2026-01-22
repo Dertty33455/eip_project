@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Book, BookCondition, BookStatus } from '../types'
-import { mockApi } from '../api/mockApi'
+import { api } from '../api/api'
 
 export type BookSort = 'Date' | 'Prix' | 'Popularité'
 
@@ -50,7 +50,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   async fetchBooks() {
     set({ isLoading: true, error: null })
     try {
-      const books = await mockApi.listBooks()
+      const books = await api.listBooks()
       set({ books, isLoading: false })
     } catch (e) {
       set({ isLoading: false, error: (e as Error).message })
@@ -59,7 +59,7 @@ export const useMarketStore = create<MarketState>((set, get) => ({
 
   async fetchFavorites(userId) {
     try {
-      const favorites = await mockApi.getFavorites(userId)
+      const favorites = await api.getFavorites(userId)
       set({ favorites })
     } catch {
       set({ favorites: [] })
@@ -67,14 +67,14 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   },
 
   async toggleFavorite(userId, bookId) {
-    const favorites = await mockApi.toggleFavorite(userId, bookId)
+    const favorites = await api.toggleFavorite(userId, bookId)
     set({ favorites })
   },
 
   async publishBook(params) {
     set({ isLoading: true, error: null })
     try {
-      const created = await mockApi.publishBook(params)
+      const created = await api.publishBook(params)
       set({ books: [created, ...get().books], isLoading: false })
       return created
     } catch (e) {
@@ -84,17 +84,17 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   },
 
   async updateBook(bookId, patch) {
-    const updated = await mockApi.updateBook(bookId, patch)
+    const updated = await api.updateBook(bookId, patch)
     set({ books: get().books.map((b) => (b.id === bookId ? updated : b)) })
   },
 
   async deleteBook(bookId) {
-    await mockApi.deleteBook(bookId)
+    await api.deleteBook(bookId)
     set({ books: get().books.filter((b) => b.id !== bookId) })
   },
 
   async setBookStatus(bookId, status) {
-    const updated = await mockApi.updateBook(bookId, { status })
+    const updated = await api.updateBook(bookId, { status })
     set({ books: get().books.map((b) => (b.id === bookId ? updated : b)) })
   },
 }))

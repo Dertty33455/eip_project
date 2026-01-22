@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Conversation, Message } from '../types'
-import { mockApi } from '../api/mockApi'
+import { api } from '../api/api'
 
 type MessagingState = {
   conversations: Conversation[]
@@ -35,7 +35,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   async fetchConversations(userId) {
     set({ isLoading: true, error: null })
     try {
-      const conversations = await mockApi.listConversations(userId)
+      const conversations = await api.listConversations(userId)
       set({ conversations, isLoading: false })
     } catch (e) {
       set({ isLoading: false, error: (e as Error).message })
@@ -47,7 +47,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   async fetchMessages(conversationId) {
-    const messages = await mockApi.listMessages(conversationId)
+    const messages = await api.listMessages(conversationId)
     set({
       messagesByConversationId: {
         ...get().messagesByConversationId,
@@ -57,7 +57,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   async openConversationForBook(params) {
-    const conv = await mockApi.getOrCreateConversation(params)
+    const conv = await api.getOrCreateConversation(params)
     const current = get().conversations
     if (!current.find((c) => c.id === conv.id)) {
       set({ conversations: [conv, ...current] })
@@ -67,7 +67,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   async sendMessage(params) {
-    const msg = await mockApi.sendMessage(params)
+    const msg = await api.sendMessage(params)
     const existing = get().messagesByConversationId[params.conversationId] ?? []
     set({
       messagesByConversationId: {
@@ -78,7 +78,7 @@ export const useMessagingStore = create<MessagingState>((set, get) => ({
   },
 
   async markRead(conversationId, userId) {
-    await mockApi.markConversationRead({ conversationId, userId })
+    await api.markConversationRead({ conversationId, userId })
     set({
       conversations: get().conversations.map((c) =>
         c.id === conversationId

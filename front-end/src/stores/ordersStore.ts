@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Order, PaymentMethod } from '../types'
-import { mockApi } from '../api/mockApi'
+import { api } from '../api/api'
 
 type OrdersState = {
   orders: Order[]
@@ -23,7 +23,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
   async fetchOrders(userId) {
     set({ isLoading: true, error: null })
     try {
-      const orders = await mockApi.listOrders(userId)
+      const orders = await api.listOrders(userId)
       set({ orders, isLoading: false })
     } catch (e) {
       set({ isLoading: false, error: (e as Error).message })
@@ -33,7 +33,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
   async createOrder(params) {
     set({ isLoading: true, error: null })
     try {
-      const order = await mockApi.createOrder(params)
+      const order = await api.createOrder(params)
       set({ orders: [order, ...get().orders], isLoading: false })
       return order
     } catch (e) {
