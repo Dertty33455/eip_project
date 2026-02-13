@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: afribook_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-afribook}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-afribook_secret_2024}
+      POSTGRES_DB: ${POSTGRES_DB:-afribook}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-afribook} -d ${POSTGRES_DB:-afribook}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - afribook_network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: afribook_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - afribook_network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: afribook_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-afribook}:${POSTGRES_PASSWORD:-afribook_secret_2024}@postgres:5432/${POSTGRES_DB:-afribook}?schema=public
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      # MTN Mobile Money
+      - MTN_MOMO_API_KEY=${MTN_MOMO_API_KEY}
+      - MTN_MOMO_USER_ID=${MTN_MOMO_USER_ID}
+      - MTN_MOMO_SUBSCRIPTION_KEY=${MTN_MOMO_SUBSCRIPTION_KEY}
+      - MTN_MOMO_ENVIRONMENT=${MTN_MOMO_ENVIRONMENT:-sandbox}
+      - MTN_MOMO_CALLBACK_URL=${MTN_MOMO_CALLBACK_URL}
+      # Moov Money
+      - MOOV_API_KEY=${MOOV_API_KEY}
+      - MOOV_MERCHANT_ID=${MOOV_MERCHANT_ID}
+      - MOOV_CALLBACK_URL=${MOOV_CALLBACK_URL}
+      # AWS S3 for file storage
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-eu-west-3}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+    ports:
+      - "3000:3000"
+    networks:
+      - afribook_network
+
+  # Prisma Studio for database management (development only)
+  prisma-studio:
+    image: node:20-alpine
+    container_name: afribook_prisma_studio
+    profiles:
+      - dev
+    working_dir: /app
+    command: npx prisma studio --port 5555
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-afribook}:${POSTGRES_PASSWORD:-afribook_secret_2024}@postgres:5432/${POSTGRES_DB:-afribook}?schema=public
+    volumes:
+      - ./prisma:/app/prisma
+      - ./node_modules:/app/node_modules
+    ports:
+      - "5555:5555"
+    networks:
+      - afribook_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  afribook_network:
+    driver: bridge
