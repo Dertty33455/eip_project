@@ -67,7 +67,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" prefetch={true} className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-xl">A</span>
             </div>
@@ -88,6 +88,7 @@ export function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
+                  prefetch={true}
                   className={cn(
                     'flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                     isActive 
@@ -117,6 +118,7 @@ export function Navbar() {
                 {/* Notifications */}
                 <Link
                   href="/notifications"
+                  prefetch={true}
                   className="relative p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
                 >
                   <HiOutlineBell className="w-5 h-5" />
@@ -126,6 +128,7 @@ export function Navbar() {
                 {/* Cart */}
                 <Link
                   href="/cart"
+                  prefetch={true}
                   className="hidden sm:flex p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
                 >
                   <HiOutlineShoppingCart className="w-5 h-5" />

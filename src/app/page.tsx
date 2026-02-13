@@ -85,6 +85,7 @@ function HeroSection() {
             >
               <Link 
                 href="/books"
+                prefetch={true}
                 className="btn-primary inline-flex items-center justify-center gap-2 text-lg px-8 py-4 relative z-20 cursor-pointer"
               >
                 Explorer les livres
@@ -93,6 +94,7 @@ function HeroSection() {
               {!isAuthenticated && (
                 <Link 
                   href="/register"
+                  prefetch={true}
                   className="btn-secondary inline-flex items-center justify-center gap-2 text-lg px-8 py-4 relative z-20 cursor-pointer"
                 >
                   Créer un compte gratuit

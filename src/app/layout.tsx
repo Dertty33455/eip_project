@@ -5,6 +5,7 @@ import './globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { NavigationProgress } from '@/components/ui/NavigationProgress'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -46,6 +47,7 @@ export default function RootLayout({
     <html lang="fr" className={`${inter.variable} ${playfair.variable} ${ubuntu.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <AuthProvider>
+          <NavigationProgress />
           <Toaster 
             position="top-center"
             toastOptions={{

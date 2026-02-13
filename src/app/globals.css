@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import nprogress styles */
+@import './nprogress.css';
+
 @layer base {
   :root {
     --background: 255 254 247;
