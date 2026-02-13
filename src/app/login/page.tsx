@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { signIn } from 'next-auth/react'
+import toast from 'react-hot-toast'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiPhone } from 'react-icons/fi'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -52,9 +54,17 @@ export default function LoginPage() {
       router.push('/')
     }
   }
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signIn('google', { callbackUrl: '/' })
+    } catch (error) {
+      toast.error('Erreur lors de la connexion avec Google')
+    }
+  }
   
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-12 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 sm:py-12 px-4 sm:px-6">
       {/* African Pattern Background */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -68,25 +78,25 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="card">
+        <div className="card p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-block mb-6">
-              <span className="text-3xl font-display font-bold">
+          <div className="text-center mb-6 sm:mb-8">
+            <Link href="/" className="inline-block mb-4 sm:mb-6">
+              <span className="text-2xl sm:text-3xl font-display font-bold">
                 <span className="text-primary">Afri</span>
                 <span className="text-secondary">Book</span>
               </span>
             </Link>
-            <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 mb-2">
               Bon retour!
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Connectez-vous pour accéder à votre compte
             </p>
           </div>
           
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Email/Phone */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -151,15 +161,15 @@ export default function LoginPage() {
             </div>
             
             {/* Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
-                <span className="text-sm text-gray-600">Se souvenir de moi</span>
+                <span className="text-xs sm:text-sm text-gray-600">Se souvenir de moi</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+              <Link href="/forgot-password" className="text-xs sm:text-sm text-primary hover:underline">
                 Mot de passe oublié?
               </Link>
             </div>
@@ -188,16 +198,20 @@ export default function LoginPage() {
           </form>
           
           {/* Divider */}
-          <div className="my-8 flex items-center gap-4">
+          <div className="my-6 sm:my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-sm text-gray-500">ou</span>
+            <span className="text-xs sm:text-sm text-gray-500">ou</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           
           {/* Social Login */}
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <button 
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -218,14 +232,17 @@ export default function LoginPage() {
               <span className="text-gray-700">Continuer avec Google</span>
             </button>
             
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-              <FiPhone className="w-5 h-5 text-gray-700" />
+            <button 
+              type="button"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
+            >
+              <FiPhone className="w-5 h-5 text-gray-700 flex-shrink-0" />
               <span className="text-gray-700">Connexion par SMS</span>
             </button>
           </div>
           
           {/* Register Link */}
-          <p className="mt-8 text-center text-gray-600">
+          <p className="mt-6 sm:mt-8 text-center text-sm sm:text-base text-gray-600">
             Pas encore de compte?{' '}
             <Link href="/register" className="text-primary font-medium hover:underline">
               Créer un compte

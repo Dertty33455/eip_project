@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { signIn } from 'next-auth/react'
+import toast from 'react-hot-toast'
 import { 
   FiMail, 
   FiLock, 
@@ -139,8 +141,16 @@ export default function RegisterPage() {
   const strengthLabels = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort']
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500']
   
+  const handleGoogleSignup = async () => {
+    try {
+      await signIn('google', { callbackUrl: '/' })
+    } catch (error) {
+      toast.error('Erreur lors de l\'inscription avec Google')
+    }
+  }
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-12 px-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 sm:py-12 px-4 sm:px-6">
       {/* African Pattern Background */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <div className="absolute inset-0" style={{
@@ -154,25 +164,25 @@ export default function RegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="card">
+        <div className="card p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-block mb-6">
-              <span className="text-3xl font-display font-bold">
+          <div className="text-center mb-6 sm:mb-8">
+            <Link href="/" className="inline-block mb-4 sm:mb-6">
+              <span className="text-2xl sm:text-3xl font-display font-bold">
                 <span className="text-primary">Afri</span>
                 <span className="text-secondary">Book</span>
               </span>
             </Link>
-            <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 mb-2">
               Créer un compte
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Rejoignez la communauté des lecteurs africains
             </p>
           </div>
           
           {/* Progress Steps */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-6 sm:mb-8">
             <div className="flex-1">
               <div className={`h-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-gray-200'}`} />
             </div>
@@ -187,9 +197,9 @@ export default function RegisterPage() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6"
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* First Name */}
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">

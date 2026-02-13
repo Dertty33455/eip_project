@@ -6,26 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 // ============================================
 // UTILISATEURS & AUTHENTIFICATION
 // ============================================
-
-enum UserRole {
-  USER
-  SELLER
-  ADMIN
-}
-
-enum UserStatus {
-  ACTIVE
-  SUSPENDED
-  BANNED
-  PENDING_VERIFICATION
-}
 
 model User {
   id                String      @id @default(cuid())
@@ -39,8 +26,8 @@ model User {
   bio               String?
   location          String?
   country           String?
-  role              UserRole    @default(USER)
-  status            UserStatus  @default(PENDING_VERIFICATION)
+  role              String      @default("USER") // USER, SELLER, ADMIN
+  status            String      @default("PENDING_VERIFICATION") // ACTIVE, SUSPENDED, BANNED, PENDING_VERIFICATION
   isVerifiedSeller  Boolean     @default(false)
   isEmailVerified   Boolean     @default(false)
   isPhoneVerified   Boolean     @default(false)
@@ -112,34 +99,10 @@ model VerificationToken {
 // WALLET & PAIEMENTS MOBILE MONEY
 // ============================================
 
-enum TransactionType {
-  DEPOSIT           // Recharge
-  WITHDRAWAL        // Retrait
-  PURCHASE          // Achat livre
-  SALE              // Vente livre
-  SUBSCRIPTION      // Abonnement audio
-  COMMISSION        // Commission plateforme
-  REFUND            // Remboursement
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  CANCELLED
-  REFUNDED
-}
-
-enum PaymentProvider {
-  MTN_MOMO
-  MOOV_MONEY
-  WALLET
-}
-
 model Wallet {
   id              String        @id @default(cuid())
   userId          String        @unique
-  balance         Decimal       @default(0) @db.Decimal(12, 2)
+  balance         Float         @default(0)
   currency        String        @default("XOF")
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
@@ -154,16 +117,16 @@ model Wallet {
 model Transaction {
   id                String            @id @default(cuid())
   walletId          String
-  type              TransactionType
-  status            TransactionStatus @default(PENDING)
-  amount            Decimal           @db.Decimal(12, 2)
-  fee               Decimal           @default(0) @db.Decimal(12, 2)
-  netAmount         Decimal           @db.Decimal(12, 2)
+  type              String            // DEPOSIT, WITHDRAWAL, PURCHASE, SALE, SUBSCRIPTION, COMMISSION, REFUND
+  status            String            @default("PENDING") // PENDING, COMPLETED, FAILED, CANCELLED, REFUNDED
+  amount            Float
+  fee               Float             @default(0)
+  netAmount         Float
   currency          String            @default("XOF")
-  provider          PaymentProvider?
+  provider          String?           // MTN_MOMO, MOOV_MONEY, WALLET
   providerRef       String?           // Référence externe MTN/Moov
   description       String?
-  metadata          Json?
+  metadata          String? // JSON stored as string
   orderId           String?
   subscriptionId    String?
   createdAt         DateTime          @default(now())
@@ -183,22 +146,6 @@ model Transaction {
 // ============================================
 // LIVRES & MARKETPLACE
 // ============================================
-
-enum BookCondition {
-  NEW
-  LIKE_NEW
-  VERY_GOOD
-  GOOD
-  ACCEPTABLE
-}
-
-enum BookStatus {
-  DRAFT
-  ACTIVE
-  SOLD
-  RESERVED
-  ARCHIVED
-}
 
 model Category {
   id          String     @id @default(cuid())
@@ -227,21 +174,21 @@ model Book {
   title         String
   author        String
   isbn          String?
-  description   String        @db.Text
-  price         Decimal       @db.Decimal(10, 2)
-  originalPrice Decimal?      @db.Decimal(10, 2)
-  condition     BookCondition
-  status        BookStatus    @default(DRAFT)
+  description   String
+  price         Float
+  originalPrice Float?
+  condition     String        // NEW, LIKE_NEW, VERY_GOOD, GOOD, ACCEPTABLE
+  status        String        @default("DRAFT") // DRAFT, ACTIVE, SOLD, RESERVED, ARCHIVED
   quantity      Int           @default(1)
   location      String?
   city          String?
   country       String?
-  images        String[]      // Array d'URLs
+  images        String        // URLs separated by comma
   coverImage    String?
   language      String        @default("Français")
   publishedYear Int?
   pages         Int?
-  weight        Decimal?      @db.Decimal(6, 2)
+  weight        Float?
   viewCount     Int           @default(0)
   sellerId      String
   categoryId    String
@@ -263,41 +210,25 @@ model Book {
   @@index([condition])
   @@index([price])
   @@index([createdAt])
-  @@fulltext([title, author, description])
 }
 
 // ============================================
 // COMMANDES & LIVRAISON
 // ============================================
 
-enum OrderStatus {
-  PENDING
-  PAID
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  REFUNDED
-}
-
-enum DeliveryType {
-  SHIPPING
-  LOCAL_PICKUP
-}
-
 model Order {
   id                String        @id @default(cuid())
   orderNumber       String        @unique
   buyerId           String
   sellerId          String
-  status            OrderStatus   @default(PENDING)
-  subtotal          Decimal       @db.Decimal(12, 2)
-  commission        Decimal       @db.Decimal(12, 2) // 5% plateforme
-  sellerAmount      Decimal       @db.Decimal(12, 2) // 95% vendeur
-  deliveryFee       Decimal       @default(0) @db.Decimal(10, 2)
-  totalAmount       Decimal       @db.Decimal(12, 2)
+  status            String        @default("PENDING") // PENDING, PAID, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, REFUNDED
+  subtotal          Float
+  commission        Float         // 5% plateforme
+  sellerAmount      Float         // 95% vendeur
+  deliveryFee       Float         @default(0)
+  totalAmount       Float
   currency          String        @default("XOF")
-  deliveryType      DeliveryType  @default(SHIPPING)
+  deliveryType      String        @default("SHIPPING") // SHIPPING, LOCAL_PICKUP
   deliveryAddress   String?
   deliveryCity      String?
   deliveryCountry   String?
@@ -329,8 +260,8 @@ model OrderItem {
   orderId     String
   bookId      String
   quantity    Int      @default(1)
-  price       Decimal  @db.Decimal(10, 2)
-  totalPrice  Decimal  @db.Decimal(10, 2)
+  price       Float
+  totalPrice  Float
   createdAt   DateTime @default(now())
 
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -385,25 +316,19 @@ model Invoice {
 // LIVRES AUDIO & ABONNEMENTS
 // ============================================
 
-enum AudiobookStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
 model Audiobook {
   id            String          @id @default(cuid())
   title         String
   author        String
   narrator      String?
-  description   String          @db.Text
+  description   String
   coverImage    String?
   totalDuration Int             @default(0) // En secondes
   language      String          @default("Français")
   publishedYear Int?
   isPopular     Boolean         @default(false)
   isFeatured    Boolean         @default(false)
-  status        AudiobookStatus @default(DRAFT)
+  status        String          @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
   playCount     Int             @default(0)
   categoryId    String
   createdAt     DateTime        @default(now())
@@ -420,7 +345,6 @@ model Audiobook {
   @@index([categoryId])
   @@index([status])
   @@index([isPopular])
-  @@fulltext([title, author, description])
 }
 
 model AudioChapter {
@@ -460,25 +384,12 @@ model AudioProgress {
   @@index([audiobookId])
 }
 
-enum SubscriptionPlan {
-  MONTHLY
-  QUARTERLY
-  YEARLY
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  PENDING
-}
-
 model Subscription {
   id              String             @id @default(cuid())
   userId          String
-  plan            SubscriptionPlan
-  status          SubscriptionStatus @default(PENDING)
-  price           Decimal            @db.Decimal(10, 2)
+  plan            String             // MONTHLY, QUARTERLY, YEARLY
+  status          String             @default("PENDING") // ACTIVE, CANCELLED, EXPIRED, PENDING
+  price           Float
   currency        String             @default("XOF")
   startDate       DateTime?
   endDate         DateTime?
@@ -497,8 +408,8 @@ model Subscription {
 
 model SubscriptionPricing {
   id        String           @id @default(cuid())
-  plan      SubscriptionPlan @unique
-  price     Decimal          @db.Decimal(10, 2)
+  plan      String           @unique // MONTHLY, QUARTERLY, YEARLY
+  price     Float
   currency  String           @default("XOF")
   duration  Int              // En jours
   isActive  Boolean          @default(true)
@@ -510,19 +421,12 @@ model SubscriptionPricing {
 // RÉSEAU SOCIAL - POSTS & INTERACTIONS
 // ============================================
 
-enum PostType {
-  TEXT
-  IMAGE
-  REVIEW
-  RECOMMENDATION
-}
-
 model Post {
   id          String    @id @default(cuid())
   authorId    String
-  type        PostType  @default(TEXT)
-  content     String    @db.Text
-  images      String[]  // Array d'URLs
+  type        String    @default("TEXT") // TEXT, IMAGE, REVIEW, RECOMMENDATION
+  content     String
+  images      String  // URLs separated by comma
   bookTitle   String?   // Pour les recommandations
   bookAuthor  String?
   rating      Int?      // 1-5 pour les avis
@@ -542,14 +446,13 @@ model Post {
   @@index([type])
   @@index([isPublished])
   @@index([createdAt])
-  @@fulltext([content])
 }
 
 model Comment {
   id          String    @id @default(cuid())
   postId      String
   authorId    String
-  content     String    @db.Text
+  content     String
   parentId    String?   // Pour les réponses
   isReported  Boolean   @default(false)
   createdAt   DateTime  @default(now())
@@ -614,22 +517,16 @@ model Follow {
 // AVIS & NOTATIONS
 // ============================================
 
-enum ReviewType {
-  BOOK
-  AUDIOBOOK
-  SELLER
-}
-
 model Review {
   id          String     @id @default(cuid())
   authorId    String
-  type        ReviewType
+  type        String     // BOOK, AUDIOBOOK, SELLER
   bookId      String?
   audiobookId String?
   sellerId    String?    // Pour noter un vendeur
   rating      Int        // 1-5
   title       String?
-  content     String     @db.Text
+  content     String
   isVerified  Boolean    @default(false) // Achat vérifié
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -650,15 +547,10 @@ model Review {
 // FAVORIS & LISTES
 // ============================================
 
-enum FavoriteType {
-  BOOK
-  AUDIOBOOK
-}
-
 model Favorite {
   id          String       @id @default(cuid())
   userId      String
-  type        FavoriteType
+  type        String       // BOOK, AUDIOBOOK
   bookId      String?
   audiobookId String?
   createdAt   DateTime     @default(now())
@@ -677,32 +569,15 @@ model Favorite {
 // NOTIFICATIONS
 // ============================================
 
-enum NotificationType {
-  WALLET_DEPOSIT
-  WALLET_WITHDRAWAL
-  ORDER_PLACED
-  ORDER_PAID
-  ORDER_SHIPPED
-  ORDER_DELIVERED
-  SALE_MADE
-  NEW_MESSAGE
-  NEW_COMMENT
-  NEW_LIKE
-  NEW_FOLLOWER
-  NEW_CHAPTER
-  SUBSCRIPTION_EXPIRING
-  SYSTEM
-}
-
 model Notification {
   id        String           @id @default(cuid())
   userId    String
-  type      NotificationType
+  type      String           // WALLET_DEPOSIT, WALLET_WITHDRAWAL, ORDER_PLACED, ORDER_PAID, ORDER_SHIPPED, ORDER_DELIVERED, SALE_MADE, NEW_MESSAGE, NEW_COMMENT, NEW_LIKE, NEW_FOLLOWER, NEW_CHAPTER, SUBSCRIPTION_EXPIRING, SYSTEM
   title     String
   message   String
   link      String?
   isRead    Boolean          @default(false)
-  metadata  Json?
+  metadata  String?          // JSON stored as string
   createdAt DateTime         @default(now())
 
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -747,8 +622,8 @@ model Message {
   conversationId String
   senderId       String
   receiverId     String
-  content        String       @db.Text
-  images         String[]
+  content        String       // JSON stored as string
+  images         String       // URLs separated by comma
   isRead         Boolean      @default(false)
   createdAt      DateTime     @default(now())
 
@@ -765,31 +640,15 @@ model Message {
 // SIGNALEMENTS & MODÉRATION
 // ============================================
 
-enum ReportReason {
-  SPAM
-  INAPPROPRIATE
-  HARASSMENT
-  FAKE
-  COPYRIGHT
-  OTHER
-}
-
-enum ReportStatus {
-  PENDING
-  REVIEWED
-  RESOLVED
-  DISMISSED
-}
-
 model Report {
   id          String       @id @default(cuid())
   reporterId  String
   targetId    String?      // User being reported
   postId      String?
   commentId   String?
-  reason      ReportReason
-  description String?      @db.Text
-  status      ReportStatus @default(PENDING)
+  reason      String       // SPAM, INAPPROPRIATE, HARASSMENT, FAKE, COPYRIGHT, OTHER
+  description String?
+  status      String       @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
   resolvedBy  String?
   resolvedAt  DateTime?
   createdAt   DateTime     @default(now())
@@ -812,7 +671,7 @@ model Report {
 model Setting {
   id        String   @id @default(cuid())
   key       String   @unique
-  value     String   @db.Text
+  value     String
   type      String   @default("string") // string, number, boolean, json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -826,10 +685,10 @@ model Setting {
 
 model Analytics {
   id        String   @id @default(cuid())
-  date      DateTime @db.Date
+  date      DateTime
   metric    String   // total_users, total_orders, total_revenue, etc.
-  value     Decimal  @db.Decimal(14, 2)
-  metadata  Json?
+  value     Float
+  metadata  String?  // JSON stored as string
   createdAt DateTime @default(now())
 
   @@unique([date, metric])

@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -44,34 +45,36 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${playfair.variable} ${ubuntu.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
-        <Toaster 
-          position="top-center"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#292524',
-              color: '#fff',
-              borderRadius: '12px',
-            },
-            success: {
-              iconTheme: {
-                primary: '#1b5e20',
-                secondary: '#fff',
+        <AuthProvider>
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#292524',
+                color: '#fff',
+                borderRadius: '12px',
               },
-            },
-            error: {
-              iconTheme: {
-                primary: '#dc2626',
-                secondary: '#fff',
+              success: {
+                iconTheme: {
+                  primary: '#1b5e20',
+                  secondary: '#fff',
+                },
               },
-            },
-          }}
-        />
-        <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+              error: {
+                iconTheme: {
+                  primary: '#dc2626',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )
