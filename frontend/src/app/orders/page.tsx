@@ -114,7 +114,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/orders')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders`)
       if (res.ok) {
         const data = await res.json()
         setOrders(data)
@@ -225,7 +225,7 @@ export default function OrdersPage() {
 
   const cancelOrder = async (orderId: string) => {
     try {
-      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders/${orderId}/cancel`, {
         method: 'POST'
       })
 
@@ -245,7 +245,7 @@ export default function OrdersPage() {
     if (!reviewOrder) return
     
     try {
-      const res = await fetch(`/api/orders/${reviewOrder.id}/review`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders/${reviewOrder.id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating: reviewRating, comment: reviewComment })

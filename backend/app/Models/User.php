@@ -14,6 +14,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     /**
+     * The attributes that should be appended to arrays.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'firstName',
+        'lastName',
+        'isVerified',
+        'totalSales',
+        'rating',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -59,5 +72,45 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the user's first name in camelCase format.
+     */
+    public function getFirstNameAttribute()
+    {
+        return $this->attributes['first_name'] ?? null;
+    }
+
+    /**
+     * Get the user's last name in camelCase format.
+     */
+    public function getLastNameAttribute()
+    {
+        return $this->attributes['last_name'] ?? null;
+    }
+
+    /**
+     * Get whether the user is a verified seller.
+     */
+    public function getIsVerifiedAttribute()
+    {
+        return (bool) ($this->attributes['is_verified_seller'] ?? false);
+    }
+
+    /**
+     * Get the total number of sales by this seller (placeholder).
+     */
+    public function getTotalSalesAttribute()
+    {
+        return $this->attributes['total_sales'] ?? 0;
+    }
+
+    /**
+     * Get the seller's average rating (placeholder).
+     */
+    public function getRatingAttribute()
+    {
+        return $this->attributes['rating'] ?? 4.5;
     }
 }

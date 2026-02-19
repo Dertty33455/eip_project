@@ -74,7 +74,7 @@ export default function SellBookPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/categories`)
       if (res.ok) {
         const data = await res.json()
         setCategories(data)
@@ -197,7 +197,7 @@ export default function SellBookPage() {
         images: imageUrls
       }
 
-      const res = await fetch('/api/books', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookData)

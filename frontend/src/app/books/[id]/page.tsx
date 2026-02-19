@@ -120,7 +120,7 @@ export default function BookDetailPage() {
 
   const fetchBook = async () => {
     try {
-      const res = await fetch(`/api/books/${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books/${params.id}`)
       if (res.ok) {
         const data = await res.json()
         setBook(data)
@@ -128,7 +128,7 @@ export default function BookDetailPage() {
         // Demo data
         setBook({
           id: params.id as string,
-          title: 'L\'Enfant Noir',
+          title: 'L\'Enfant Noir',  
           author: 'Camara Laye',
           description: `L'Enfant noir est un roman autobiographique de l'écrivain guinéen Camara Laye, publié en 1953. Ce chef-d'œuvre de la littérature africaine raconte l'enfance de l'auteur en Haute-Guinée, dans un village traditionnel où les croyances animistes côtoient l'islam.
 
@@ -248,7 +248,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
   const checkFavorite = async () => {
     if (!user) return
     try {
-      const res = await fetch(`/api/favorites/check?bookId=${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/check?bookId=${params.id}`)
       if (res.ok) {
         const data = await res.json()
         setIsFavorite(data.isFavorite)
@@ -267,7 +267,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
 
     try {
       const method = isFavorite ? 'DELETE' : 'POST'
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookId: params.id })
@@ -291,7 +291,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
 
     setAddingToCart(true)
     try {
-      const res = await fetch('/api/cart', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/cart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookId: params.id, quantity })
@@ -346,7 +346,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
     }
 
     try {
-      const res = await fetch(`/api/books/${params.id}/reviews`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books/${params.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newReview)
@@ -870,7 +870,8 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
             Livres similaires
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
-            {book.relatedBooks.map((relatedBook) => (
+            {book.relatedBooks && book.relatedBooks.length > 0 ? (
+              book.relatedBooks.map((relatedBook) => (
               <Link
                 key={relatedBook.id}
                 href={`/books/${relatedBook.id}`}
@@ -895,7 +896,12 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                   </div>
                 </div>
               </Link>
-            ))}
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                Aucun livre similaire trouvé
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

@@ -129,10 +129,13 @@ export default function AudiobookDetailPage() {
 
   const fetchAudiobook = async () => {
     try {
-      const res = await fetch(`/api/audiobooks/${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/audiobooks/${params.id}`)
       if (res.ok) {
         const data = await res.json()
-        setAudiobook(data)
+        setAudiobook({
+          ...data,
+          chapters: data.chapters || []
+        })
       } else {
         // Demo data
         setAudiobook({
@@ -211,7 +214,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
   const checkFavorite = async () => {
     if (!user) return
     try {
-      const res = await fetch(`/api/favorites/check?audiobookId=${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/check?audiobookId=${params.id}`)
       if (res.ok) {
         const data = await res.json()
         setIsFavorite(data.isFavorite)
@@ -230,7 +233,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
 
     try {
       const method = isFavorite ? 'DELETE' : 'POST'
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ audiobookId: params.id })
@@ -263,14 +266,14 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
   }
 
   const canPlayChapter = (chapter: Chapter) => {
-    return chapter.isFree || hasActiveSubscription
+    return chapter && (chapter.isFree || hasActiveSubscription)
   }
 
   const playChapter = (index: number) => {
     if (!audiobook) return
-    
-    const chapter = audiobook.chapters[index]
-    if (!canPlayChapter(chapter)) {
+    const chapters = audiobook.chapters || []
+    const chapter = chapters[index]
+    if (!chapter || !canPlayChapter(chapter)) {
       toast.error('Abonnez-vous pour accéder à ce chapitre')
       router.push('/subscriptions')
       return
@@ -313,9 +316,10 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
 
   const nextChapter = () => {
     if (!audiobook) return
-    if (currentChapterIndex < audiobook.chapters.length - 1) {
+    const chapters = audiobook.chapters || []
+    if (currentChapterIndex < chapters.length - 1) {
       const nextIndex = currentChapterIndex + 1
-      if (canPlayChapter(audiobook.chapters[nextIndex])) {
+      if (canPlayChapter(chapters[nextIndex])) {
         playChapter(nextIndex)
       } else {
         toast.error('Abonnez-vous pour accéder au chapitre suivant')
@@ -408,7 +412,8 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
     )
   }
 
-  const currentChapter = audiobook.chapters[currentChapterIndex]
+  const chapters = audiobook?.chapters || []
+  const currentChapter = chapters[currentChapterIndex]
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
@@ -532,7 +537,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
                   </span>
                   <span className="flex items-center gap-1">
                     <FiList className="w-4 h-4" />
-                    {audiobook.chapters.length} chapitres
+                    {chapters.length} chapitres
                   </span>
                 </div>
 
@@ -600,7 +605,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
               {/* Tab Headers */}
               <div className="flex border-b">
                 {[
-                  { id: 'chapters', label: `Chapitres (${audiobook.chapters.length})` },
+                  { id: 'chapters', label: `Chapitres (${chapters.length})` }
                   { id: 'description', label: 'Description' },
                   { id: 'reviews', label: `Avis (${audiobook.reviewCount})` }
                 ].map((tab) => (
@@ -635,7 +640,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
                       exit={{ opacity: 0, y: -10 }}
                       className="space-y-2"
                     >
-                      {audiobook.chapters.map((chapter, index) => {
+                      {chapters.map((chapter, index) => {
                         const isLocked = !canPlayChapter(chapter)
                         const isCurrent = currentChapterIndex === index && showPlayer
                         
@@ -914,7 +919,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
                   {/* Next Chapter */}
                   <button
                     onClick={nextChapter}
-                    disabled={currentChapterIndex === audiobook.chapters.length - 1}
+                    disabled={currentChapterIndex === chapters.length - 1}
                     className="hidden md:block p-2 text-gray-600 hover:text-primary transition-colors disabled:opacity-50"
                   >
                     <FiSkipForward className="w-5 h-5" />

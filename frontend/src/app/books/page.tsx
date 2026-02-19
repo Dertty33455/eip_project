@@ -406,22 +406,9 @@ export default function BooksPage() {
   }, [filters, pagination.page])
   
   // Demo books
-  const demoBooks = [
-    { id: '1', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', price: 8500, rating: 5, condition: 'NEW', _count: { reviews: 128 } },
-    { id: '2', title: 'Une Si Longue Lettre', author: 'Mariama Bâ', price: 6500, rating: 5, condition: 'NEW', _count: { reviews: 256 } },
-    { id: '3', title: 'L\'Enfant Noir', author: 'Camara Laye', price: 7000, rating: 4, condition: 'LIKE_NEW', _count: { reviews: 89 } },
-    { id: '4', title: 'Tout s\'effondre', author: 'Chinua Achebe', price: 9000, rating: 5, condition: 'NEW', _count: { reviews: 312 } },
-    { id: '5', title: 'Le Monde s\'effondre', author: 'Chinua Achebe', price: 8000, rating: 4, condition: 'GOOD', _count: { reviews: 156 } },
-    { id: '6', title: 'Sous l\'orage', author: 'Seydou Badian', price: 5500, rating: 4, condition: 'NEW', _count: { reviews: 67 } },
-    { id: '7', title: 'Le Vieux Nègre et la Médaille', author: 'Ferdinand Oyono', price: 6000, rating: 4, condition: 'LIKE_NEW', _count: { reviews: 94 } },
-    { id: '8', title: 'Ville Cruelle', author: 'Eza Boto', price: 7500, rating: 4, condition: 'NEW', _count: { reviews: 45 } },
-    { id: '9', title: 'Mission Terminée', author: 'Mongo Beti', price: 6800, rating: 4, condition: 'GOOD', _count: { reviews: 72 } },
-    { id: '10', title: 'Le Pauvre Christ de Bomba', author: 'Mongo Beti', price: 7200, rating: 5, condition: 'NEW', _count: { reviews: 98 } },
-    { id: '11', title: 'L\'Aventure Ambiguë', author: 'Cheikh Hamidou Kane', price: 8200, rating: 5, condition: 'LIKE_NEW', _count: { reviews: 187 } },
-    { id: '12', title: 'Soundjata ou l\'Épopée Mandingue', author: 'Djibril Tamsir Niane', price: 5800, rating: 4, condition: 'NEW', _count: { reviews: 134 } },
-  ]
+
   
-  const displayBooks = books.length > 0 ? books : demoBooks
+  const displayBooks = books
   
   return (
     <main className="min-h-screen bg-gray-50">

@@ -150,7 +150,23 @@ export function useBooks() {
         }
       })
     }
-    return api.get(`/api/books?${searchParams.toString()}`)
+    const { data, error } = await api.get(`/api/books?${searchParams.toString()}`)
+    
+    // Transform Laravel pagination format to frontend format
+    if (data && !error) {
+      return {
+        data: {
+          books: data.data || [],
+          pagination: {
+            page: data.current_page || 1,
+            total: data.total || 0,
+            pages: data.last_page || 1,
+          }
+        },
+        error: null
+      }
+    }
+    return { data: null, error }
   }, [api])
 
   const getBook = useCallback(async (id: string) => {
@@ -205,7 +221,23 @@ export function useAudiobooks() {
         }
       })
     }
-    return api.get(`/api/audiobooks?${searchParams.toString()}`)
+    const { data, error } = await api.get(`/api/audiobooks?${searchParams.toString()}`)
+    
+    // Transform Laravel pagination format to frontend format
+    if (data && !error) {
+      return {
+        data: {
+          audiobooks: data.data || [],
+          pagination: {
+            page: data.current_page || 1,
+            total: data.total || 0,
+            pages: data.last_page || 1,
+          }
+        },
+        error: null
+      }
+    }
+    return { data: null, error }
   }, [api])
 
   const getAudiobook = useCallback(async (id: string) => {

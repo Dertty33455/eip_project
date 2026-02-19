@@ -42,7 +42,7 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 // public resources
-Route::get('/books', [BookController::class, 'index']);
+Route::apiResource('books', BookController::class, ['only' => ['index', 'show']]);
 
 // public audiobooks endpoint
 Route::apiResource('audiobooks', AudiobookController::class);
@@ -60,7 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::patch('/auth/me', [AuthController::class, 'updateProfile']);
 
-    Route::post('/books', [BookController::class, 'store']);
+    Route::apiResource('books', BookController::class, ['except' => ['index', 'show']]);
 
     // generic resource routes (you can restrict methods as needed)
     // Route::apiResource('categories', CategoryController::class); // now public

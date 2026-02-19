@@ -61,7 +61,8 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
   const [showChapterList, setShowChapterList] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   
-  const chapter = audiobook.chapters[currentChapter]
+  const chapters = audiobook.chapters || []
+  const chapter = chapters[currentChapter]
   const canPlay = chapter?.isFree || hasSubscription
   
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
       if (isRepeat) {
         audio.currentTime = 0
         audio.play()
-      } else if (currentChapter < audiobook.chapters.length - 1) {
+      } else if (currentChapter < chapters.length - 1) {
         playChapter(currentChapter + 1)
       } else {
         setIsPlaying(false)
@@ -90,7 +91,7 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
       audio.removeEventListener('loadedmetadata', updateDuration)
       audio.removeEventListener('ended', handleEnded)
     }
-  }, [currentChapter, isRepeat, audiobook.chapters.length])
+  }, [currentChapter, isRepeat, chapters.length])
   
   const togglePlay = () => {
     if (!canPlay) return
@@ -107,7 +108,7 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
   }
   
   const playChapter = (index: number) => {
-    const targetChapter = audiobook.chapters[index]
+    const targetChapter = chapters[index]
     if (!targetChapter) return
     
     if (!targetChapter.isFree && !hasSubscription) {
@@ -136,7 +137,7 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
   }
   
   const nextChapter = () => {
-    if (currentChapter < audiobook.chapters.length - 1) {
+    if (currentChapter < chapters.length - 1) {
       playChapter(currentChapter + 1)
     }
   }
@@ -390,7 +391,7 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
               {/* Next Chapter */}
               <button 
                 onClick={nextChapter}
-                disabled={currentChapter === audiobook.chapters.length - 1}
+                disabled={currentChapter === chapters.length - 1}
                 className="p-3 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -461,10 +462,10 @@ export default function AudiobookPlayer({ audiobook }: AudiobookPlayerProps) {
                 className="mt-6 bg-white/5 rounded-2xl overflow-hidden"
               >
                 <div className="p-4 border-b border-white/10">
-                  <h3 className="font-semibold">Chapitres ({audiobook.chapters.length})</h3>
+                  <h3 className="font-semibold">Chapitres ({chapters.length})</h3>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {audiobook.chapters.map((ch, index) => {
+                  {chapters.map((ch, index) => {
                     const isLocked = !ch.isFree && !hasSubscription
                     const isCurrent = index === currentChapter
                     

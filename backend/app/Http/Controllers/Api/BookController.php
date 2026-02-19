@@ -11,7 +11,7 @@ class BookController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Book::query();
+        $query = Book::with('category', 'seller');
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
@@ -66,7 +66,7 @@ class BookController extends Controller
 
     public function show(string $id)
     {
-        $book = Book::find($id);
+        $book = Book::with(['category', 'seller', 'reviews.user'])->find($id);
         if (!$book) {
             return response()->json(['error' => 'Book not found'], 404);
         }

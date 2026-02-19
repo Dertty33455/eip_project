@@ -79,8 +79,8 @@ export default function FavoritesPage() {
   const fetchFavorites = async () => {
     try {
       const [booksRes, audiobooksRes] = await Promise.all([
-        fetch('/api/favorites?type=books'),
-        fetch('/api/favorites?type=audiobooks')
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites?type=books`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites?type=audiobooks`)
       ])
 
       if (booksRes.ok) {
@@ -197,7 +197,7 @@ export default function FavoritesPage() {
 
   const removeFavoriteBook = async (favoriteId: string) => {
     try {
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favoriteId, type: 'book' })
@@ -214,7 +214,7 @@ export default function FavoritesPage() {
 
   const removeFavoriteAudiobook = async (favoriteId: string) => {
     try {
-      const res = await fetch('/api/favorites', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favoriteId, type: 'audiobook' })
@@ -231,7 +231,7 @@ export default function FavoritesPage() {
 
   const addToCart = async (bookId: string) => {
     try {
-      const res = await fetch('/api/cart', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/cart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookId, quantity: 1 })

@@ -131,7 +131,7 @@ export default function SettingsPage() {
     setLoading(true)
     
     try {
-      const res = await fetch('/api/users/me', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileForm)
@@ -168,7 +168,7 @@ export default function SettingsPage() {
     setLoading(true)
     
     try {
-      const res = await fetch('/api/users/me/password', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -194,7 +194,7 @@ export default function SettingsPage() {
   const handleNotificationSave = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/users/me/notifications', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me/notifications`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(notifications)
@@ -215,7 +215,7 @@ export default function SettingsPage() {
   const handlePrivacySave = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/users/me/privacy', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me/privacy`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(privacy)
@@ -236,7 +236,7 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/users/me', { method: 'DELETE' })
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me`, { method: 'DELETE' })
       
       if (res.ok) {
         toast.success('Compte supprimé')
