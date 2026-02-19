@@ -32,12 +32,26 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\AnalyticsController;
 
+// Placeholder login route to prevent RouteNotFoundException for API
+Route::get('/login', function () {
+    return response()->json(['message' => 'Login page placeholder.'], 401);
+})->name('login');
+
 // public endpoints
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 
 // public resources
 Route::get('/books', [BookController::class, 'index']);
+
+// public audiobooks endpoint
+Route::apiResource('audiobooks', AudiobookController::class);
+
+// public categories endpoint
+Route::apiResource('categories', CategoryController::class, ['only' => ['index', 'show']]);
+
+// public posts endpoint
+Route::apiResource('posts', PostController::class, ['only' => ['index', 'show']]);
 
 // protected routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
@@ -49,7 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/books', [BookController::class, 'store']);
 
     // generic resource routes (you can restrict methods as needed)
-    Route::apiResource('categories', CategoryController::class);
+    // Route::apiResource('categories', CategoryController::class); // now public
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('wallets', WalletController::class);
     Route::apiResource('transactions', TransactionController::class);
@@ -57,12 +71,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('carts', CartController::class);
     Route::apiResource('cart-items', CartItemController::class);
     Route::apiResource('invoices', InvoiceController::class);
-    Route::apiResource('audiobooks', AudiobookController::class);
+    // Route::apiResource('audiobooks', AudiobookController::class); // now public
     Route::apiResource('audio-chapters', AudioChapterController::class);
     Route::apiResource('audio-progress', AudioProgressController::class);
     Route::apiResource('subscriptions', SubscriptionController::class);
     Route::apiResource('subscription-pricings', SubscriptionPricingController::class);
-    Route::apiResource('posts', PostController::class);
+    // Route::apiResource('posts', PostController::class); // now public for index/show
     Route::apiResource('comments', CommentController::class);
     Route::apiResource('likes', LikeController::class);
     Route::apiResource('shares', ShareController::class);

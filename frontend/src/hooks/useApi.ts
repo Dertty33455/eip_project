@@ -63,7 +63,8 @@ export function useApi<T = any>() {
         headers,
       })
       
-      const data = await res.json()
+      const text = await res.text()
+      const data = text ? JSON.parse(text) : null
       
       if (!res.ok) {
         const errorMessage = data.error || data.message || 'Une erreur est survenue'

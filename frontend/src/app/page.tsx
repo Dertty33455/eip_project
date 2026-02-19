@@ -322,20 +322,8 @@ function FeaturedBooksSection() {
     }
     fetchBooks()
   }, [])
-  
-  // Demo books for display
-  const demoBooks = [
-    { id: '1', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', price: 8500, rating: 5, reviewCount: 128, condition: 'NEW' },
-    { id: '2', title: 'Une Si Longue Lettre', author: 'Mariama Bâ', price: 6500, rating: 5, reviewCount: 256, condition: 'NEW' },
-    { id: '3', title: 'L\'Enfant Noir', author: 'Camara Laye', price: 7000, rating: 4, reviewCount: 89, condition: 'LIKE_NEW' },
-    { id: '4', title: 'Tout s\'effondre', author: 'Chinua Achebe', price: 9000, rating: 5, reviewCount: 312, condition: 'NEW' },
-    { id: '5', title: 'Le Monde s\'effondre', author: 'Chinua Achebe', price: 8000, rating: 4, reviewCount: 156, condition: 'GOOD' },
-    { id: '6', title: 'Sous l\'orage', author: 'Seydou Badian', price: 5500, rating: 4, reviewCount: 67, condition: 'NEW' },
-    { id: '7', title: 'Le Vieux Nègre et la Médaille', author: 'Ferdinand Oyono', price: 6000, rating: 4, reviewCount: 94, condition: 'LIKE_NEW' },
-    { id: '8', title: 'Ville Cruelle', author: 'Eza Boto', price: 7500, rating: 4, reviewCount: 45, condition: 'NEW' },
-  ]
-  
-  const displayBooks = books.length > 0 ? books : demoBooks
+
+  const displayBooks = books
   
   return (
     <section className="py-20 bg-gray-50">
@@ -460,15 +448,7 @@ function FeaturedAudiobooksSection() {
     fetchAudiobooks()
   }, [])
   
-  // Demo audiobooks
-  const demoAudiobooks = [
-    { id: '1', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', narrator: 'Souleymane Sy Savane', duration: '6h 45min' },
-    { id: '2', title: 'Une Si Longue Lettre', author: 'Mariama Bâ', narrator: 'Aïssa Maïga', duration: '3h 20min' },
-    { id: '3', title: 'L\'Enfant Noir', author: 'Camara Laye', narrator: 'Eriq Ebouaney', duration: '5h 10min' },
-    { id: '4', title: 'Tout s\'effondre', author: 'Chinua Achebe', narrator: 'Peter Mensah', duration: '7h 30min' },
-  ]
-  
-  const displayAudiobooks = audiobooks.length > 0 ? audiobooks : demoAudiobooks
+  const displayAudiobooks = audiobooks
   
   return (
     <section className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5">

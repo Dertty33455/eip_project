@@ -24,5 +24,16 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
         ]);
+
+        // seed the application with demo data coming from the front‑end seeder logic
+        $this->call([
+            CategoriesSeeder::class,
+            SubscriptionPricingSeeder::class,
+            SettingsSeeder::class,
+            UsersSeeder::class,
+            DemoBooksSeeder::class,
+            DemoAudiobooksSeeder::class,
+            PostsSeeder::class,
+        ]);
     }
 }

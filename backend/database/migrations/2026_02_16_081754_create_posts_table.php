@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
             $table->string('type')->default('TEXT');
             $table->text('content');
-            $table->text('images');
+            $table->json('images')->nullable();
             $table->string('book_title')->nullable();
             $table->string('book_author')->nullable();
             $table->integer('rating')->nullable();

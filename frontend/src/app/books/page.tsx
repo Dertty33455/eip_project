@@ -17,7 +17,7 @@ import {
   FiX
 } from 'react-icons/fi'
 import { useBooks, useCategories } from '@/hooks/useApi'
-import { useAuth } from '@/hooks/useAuth'
+// import { useAuth } from '@/hooks/useAuth'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -34,7 +34,7 @@ const staggerContainer = {
 
 // Book Card Component
 function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
-  const { isAuthenticated } = useAuth()
+  // const { isAuthenticated } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   
   const conditionLabels: Record<string, string> = {

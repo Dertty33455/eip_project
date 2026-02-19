@@ -32,8 +32,8 @@ const staggerContainer = {
 
 // Audiobook Card Component
 function AudiobookCard({ audiobook }: { audiobook: any }) {
-  const { subscription } = useAuth()
-  const hasAccess = subscription?.status === 'ACTIVE'
+  // const { subscription } = useAuth()
+  const hasAccess = false // Always allow viewing, restrict only playback if needed
   
   return (
     <motion.div

@@ -16,7 +16,7 @@ import {
   FiTrendingUp,
   FiBook
 } from 'react-icons/fi'
-import { useAuth } from '@/hooks/useAuth'
+// import { useAuth } from '@/hooks/useAuth'
 import { usePosts } from '@/hooks/useApi'
 import toast from 'react-hot-toast'
 
@@ -258,7 +258,7 @@ function PostCard({ post, onLike, onComment }: {
 
 // Create Post Component
 function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) => void }) {
-  const { user } = useAuth()
+  const user = null;
   const [content, setContent] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   
@@ -276,7 +276,7 @@ function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) =
       <form onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-            {user?.firstName?.[0]}{user?.lastName?.[0] || 'U'}
+            U
           </div>
           <div className="flex-1">
             <textarea
@@ -389,7 +389,7 @@ function TrendingTopics() {
 }
 
 export default function CommunityPage() {
-  const { user, isAuthenticated } = useAuth()
+  const user = null; const isAuthenticated = false;
   const { getPosts, createPost, likePost, commentPost, isLoading } = usePosts()
   const [posts, setPosts] = useState<any[]>([])
   const [filter, setFilter] = useState<'recent' | 'popular' | 'following'>('recent')
@@ -471,9 +471,7 @@ export default function CommunityPage() {
       comments: []
     },
   ]
-  
   const displayPosts = posts.length > 0 ? posts : demoPosts
-  
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}

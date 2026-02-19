@@ -21,6 +21,8 @@ class Book extends Model
         'country',
         'images',
         'cover_image',
+        'rating',
+        'review_count',
         'language',
         'published_year',
         'pages',
