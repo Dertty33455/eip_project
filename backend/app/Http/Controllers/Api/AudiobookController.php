@@ -14,7 +14,7 @@ class AudiobookController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Audiobook::with('category', 'chapters')->query();
+        $query = Audiobook::with('category', 'chapters');
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
