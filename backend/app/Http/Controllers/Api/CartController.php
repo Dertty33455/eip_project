@@ -2,48 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 
-class CartController extends Controller
+class CartController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Cart::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'session_id' => 'sometimes|string',
+        'user_id' => 'sometimes|exists:users,id',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user','session','items'];
     }
 }

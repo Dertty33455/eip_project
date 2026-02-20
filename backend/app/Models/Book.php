@@ -119,5 +119,29 @@ class Book extends Model
     {
         return $this->attributes['quantity'] ?? 0;
     }
+
+    /**
+     * Items for orders that include this book.
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Items in carts that contain this book.
+     */
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * Favorites that reference this book.
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }
 

@@ -2,48 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 
-class InvoiceController extends Controller
+class InvoiceController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Invoice::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'order_id' => 'required|exists:orders,id',
+        'invoice_number' => 'required|string',
+        'pdf_url' => 'sometimes|url',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['order'];
     }
 }

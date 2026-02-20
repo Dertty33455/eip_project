@@ -12,7 +12,7 @@ class SettingsSeeder extends Seeder
         $settings = [
             ['key' => 'commission_rate', 'value' => '0.05', 'type' => 'number'],
             ['key' => 'free_chapters', 'value' => '1', 'type' => 'number'],
-            ['key' => 'platform_name', 'value' => 'AfriBook', 'type' => 'string'],
+            ['key' => 'platform_name', 'value' => 'BookShell', 'type' => 'string'],
             ['key' => 'currency', 'value' => 'XOF', 'type' => 'string'],
             ['key' => 'min_withdrawal', 'value' => '1000', 'type' => 'number'],
             ['key' => 'max_withdrawal', 'value' => '500000', 'type' => 'number'],

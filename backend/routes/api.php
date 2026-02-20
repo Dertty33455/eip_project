@@ -67,7 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('wallets', WalletController::class);
     Route::apiResource('transactions', TransactionController::class);
-    Route::apiResource('order-items', OrderItemController::class);
     Route::apiResource('carts', CartController::class);
     Route::apiResource('cart-items', CartItemController::class);
     Route::apiResource('invoices', InvoiceController::class);
@@ -90,4 +89,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('reviews', ReviewController::class);
     Route::apiResource('settings', SettingController::class);
     Route::apiResource('analytics', AnalyticsController::class);
+
+    // manage related audiobooks (protected)
+    Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);
+    Route::delete('audiobooks/{id}/related/{relatedId}', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'destroy']);
 });

@@ -2,48 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Like;
 use Illuminate\Http\Request;
 
-class LikeController extends Controller
+class LikeController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Like::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'user_id' => 'required|exists:users,id',
+        'post_id' => 'sometimes|exists:posts,id',
+        'comment_id' => 'sometimes|exists:comments,id',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user','post','comment'];
     }
 }

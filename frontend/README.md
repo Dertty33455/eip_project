@@ -1,4 +1,4 @@
-# AfriBook Platform
+# BookShell Platform
 
 Plateforme africaine communautaire de livres & livres audio avec marketplace et wallet mobile money.
 
@@ -70,7 +70,7 @@ cp .env.example .env
 
 Remplir le fichier `.env` avec vos configurations:
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/afribook"
+DATABASE_URL="postgresql://user:password@localhost:5432/BookShell"
 JWT_SECRET="your-super-secret-jwt-key"
 
 # MTN Mobile Money
@@ -175,7 +175,7 @@ L'interface utilise une palette de couleurs inspirée de l'Afrique:
 
 Après le seed, des données de démonstration sont disponibles:
 
-- **Admin**: admin@afribook.com / AdminPass123!
+- **Admin**: admin@BookShell.com / AdminPass123!
 - **Utilisateurs de test**: user1@test.com, user2@test.com, user3@test.com (mot de passe: TestPass123!)
 - Catégories de livres prédéfinies
 - Livres et audiobooks de démonstration

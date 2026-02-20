@@ -738,7 +738,7 @@ function TestimonialsSection() {
       name: 'Fatou Ndoye',
       role: 'Lectrice passionnée',
       location: 'Dakar, Sénégal',
-      text: 'Grâce à AfriBook, j\'ai découvert des auteurs africains que je ne connaissais pas. La communauté est incroyable!',
+      text: 'Grâce à BookShell, j\'ai découvert des auteurs africains que je ne connaissais pas. La communauté est incroyable!',
       rating: 5
     },
     {

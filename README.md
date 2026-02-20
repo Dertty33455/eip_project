@@ -1,4 +1,4 @@
-# AfriBook Monorepo
+# BookShell Monorepo
 
 This workspace has been reorganised into two top-level directories:
 

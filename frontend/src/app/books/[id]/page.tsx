@@ -326,7 +326,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
       try {
         await navigator.share({
           title: book?.title,
-          text: `Découvrez "${book?.title}" par ${book?.author} sur AfriBook`,
+          text: `Découvrez "${book?.title}" par ${book?.author} sur BookShell`,
           url: window.location.href
         })
       } catch (error) {

@@ -40,6 +40,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('api_token')->plainTextToken;
 
+        $user->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
         return response()->json(['user' => $user, 'token' => $token], 201);
     }
 
@@ -60,12 +61,14 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('api_token')->plainTextToken;
+        $user->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
         return response()->json(['user' => $user, 'token' => $token]);
     }
 
     public function me(Request $request)
     {
-        return response()->json(['user' => $request->user()]);
+        $user = $request->user()->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
+        return response()->json(['user' => $user]);
     }
 
     public function logout(Request $request)
@@ -110,6 +113,7 @@ class AuthController extends Controller
         $user = $request->user();
         $user->update($updateData);
 
+        $user->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
         return response()->json(['user' => $user, 'message' => 'Profile updated successfully']);
     }
 }

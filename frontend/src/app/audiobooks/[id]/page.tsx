@@ -253,7 +253,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
       try {
         await navigator.share({
           title: audiobook?.title,
-          text: `Écoutez "${audiobook?.title}" par ${audiobook?.author} sur AfriBook`,
+          text: `Écoutez "${audiobook?.title}" par ${audiobook?.author} sur BookShell`,
           url: window.location.href
         })
       } catch (error) {
@@ -414,6 +414,13 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
 
   const chapters = audiobook?.chapters || []
   const currentChapter = chapters[currentChapterIndex]
+  const relatedList =
+    // accept multiple possible shapes from backend
+    (audiobook as any)?.relatedAudiobooks ||
+    (audiobook as any)?.related_audiobooks ||
+    (audiobook as any)?.allRelated ||
+    (audiobook as any)?.all_related ||
+    []
 
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
@@ -605,7 +612,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
               {/* Tab Headers */}
               <div className="flex border-b">
                 {[
-                  { id: 'chapters', label: `Chapitres (${chapters.length})` }
+                  { id: 'chapters', label: `Chapitres (${chapters.length})` },
                   { id: 'description', label: 'Description' },
                   { id: 'reviews', label: `Avis (${audiobook.reviewCount})` }
                 ].map((tab) => (
@@ -809,7 +816,7 @@ L'Aventure ambiguë est considéré comme l'un des textes fondateurs de la réfl
                 Audiobooks similaires
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {audiobook.relatedAudiobooks.map((related) => (
+                {relatedList.map((related: any) => (
                   <Link
                     key={related.id}
                     href={`/audiobooks/${related.id}`}

@@ -2,48 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Subscription;
 use Illuminate\Http\Request;
 
-class SubscriptionController extends Controller
+class SubscriptionController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Subscription::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'user_id' => 'required|exists:users,id',
+        'plan' => 'required|string',
+        'status' => 'sometimes|string',
+        'price' => 'sometimes|numeric',
+        'currency' => 'sometimes|string',
+        'start_date' => 'sometimes|date',
+        'end_date' => 'sometimes|date',
+        'cancelled_at' => 'sometimes|date',
+        'auto_renew' => 'sometimes|boolean',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user','pricing','transactions'];
     }
 }

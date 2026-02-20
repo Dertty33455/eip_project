@@ -602,7 +602,7 @@ export default function SellBookPage() {
                         <span className="font-medium">{Number(form.price).toLocaleString()} FCFA</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Commission AfriBook (5%)</span>
+                        <span className="text-gray-600">Commission BookShell (5%)</span>
                         <span className="font-medium text-red-600">-{calculateCommission().toLocaleString()} FCFA</span>
                       </div>
                       <div className="border-t pt-2 mt-2">

@@ -2,48 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\AudioProgress;
 use Illuminate\Http\Request;
 
-class AudioProgressController extends Controller
+class AudioProgressController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = AudioProgress::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'user_id' => 'required|exists:users,id',
+        'audiobook_id' => 'required|exists:audiobooks,id',
+        'chapter_id' => 'required|exists:audio_chapters,id',
+        'position' => 'sometimes|numeric',
+        'completed' => 'sometimes|boolean',
+        'speed' => 'sometimes|numeric',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user','audiobook','chapter'];
     }
 }

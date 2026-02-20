@@ -14,13 +14,13 @@ class AudiobookController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Audiobook::query();
+        $query = Audiobook::with('category', 'chapters')->query();
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('author', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('author', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -30,8 +30,9 @@ class AudiobookController extends Controller
 
         $limit = (int) $request->query('limit', 12);
         $limit = max(1, min($limit, 100)); // Between 1 and 100
-        
-        $audiobooks = $query->paginate($limit);
+
+        // include counts for reviews and favorites
+        $audiobooks = $query->withCount('reviews', 'favorites')->paginate($limit);
         return response()->json($audiobooks);
     }
 
@@ -64,7 +65,14 @@ class AudiobookController extends Controller
      */
     public function show(string $id)
     {
-        $audiobook = Audiobook::find($id);
+        $audiobook = Audiobook::with([
+            'category',
+            'chapters',
+            'reviews.user',
+            'favorites',
+            'progress.user',
+            'relatedAudiobooks',
+        ])->withCount('reviews', 'favorites')->findOrFail($id);
         if (!$audiobook) {
             return response()->json(['error' => 'Audiobook not found'], 404);
         }

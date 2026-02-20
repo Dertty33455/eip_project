@@ -2,48 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
-class TransactionController extends Controller
+class TransactionController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Transaction::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'wallet_id' => 'required|exists:wallets,id',
+        'type' => 'required|string',
+        'status' => 'sometimes|string',
+        'amount' => 'required|numeric',
+        'fee' => 'sometimes|numeric',
+        'net_amount' => 'sometimes|numeric',
+        'currency' => 'sometimes|string',
+        'provider' => 'sometimes|string',
+        'provider_ref' => 'sometimes|string',
+        'description' => 'sometimes|string',
+        'metadata' => 'sometimes|json',
+        'order_id' => 'sometimes|exists:orders,id',
+        'subscription_id' => 'sometimes|exists:subscriptions,id',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['wallet','order','subscription'];
     }
 }

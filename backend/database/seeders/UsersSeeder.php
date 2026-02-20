@@ -13,18 +13,18 @@ class UsersSeeder extends Seeder
     {
         // administration user
         $admin = User::updateOrCreate(
-            ['email' => 'admin@afribook.com'],
+            ['email' => 'admin@BookShell.com'],
             [
                 'phone' => '+22500000000',
                 'password' => Hash::make('Admin@123'),
                 'first_name' => 'Admin',
-                'last_name' => 'AfriBook',
+                'last_name' => 'BookShell',
                 'username' => 'admin',
                 'role' => 'ADMIN',
                 'status' => 'ACTIVE',
                 'is_email_verified' => true,
                 'is_phone_verified' => true,
-                'bio' => 'Administrateur de la plateforme AfriBook',
+                'bio' => 'Administrateur de la plateforme BookShell',
                 'location' => 'Abidjan, Côte d\'Ivoire',
                 'country' => "Côte d'Ivoire",
             ]

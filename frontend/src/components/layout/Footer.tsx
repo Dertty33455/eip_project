@@ -70,11 +70,11 @@ export function Footer() {
             </p>
             <div className="space-y-3">
               <a 
-                href="mailto:contact@afribook.com"
+                href="mailto:contact@BookShell.com"
                 className="flex items-center space-x-2 text-cream-300 hover:text-primary-400 transition-colors"
               >
                 <HiOutlineMail className="w-5 h-5" />
-                <span>contact@afribook.com</span>
+                <span>contact@BookShell.com</span>
               </a>
               <a 
                 href="tel:+22500000000"
@@ -200,7 +200,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <p className="text-cream-400 text-sm">
-              © {new Date().getFullYear()} AfriBook. Tous droits réservés.
+              © {new Date().getFullYear()} BookShell. Tous droits réservés.
             </p>
             <p className="text-cream-400 text-sm">
               Fait avec ❤️ en Afrique pour l'Afrique 🌍

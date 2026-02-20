@@ -253,7 +253,7 @@ function PaymentModal({
                   <span className="text-primary font-bold">W</span>
                 </div>
                 <div className="text-left">
-                  <span className="font-medium block">Portefeuille AfriBook</span>
+                  <span className="font-medium block">Portefeuille BookShell</span>
                   <span className="text-sm text-gray-500">
                     Solde: {(wallet?.balance || 0).toLocaleString()} XOF
                     {!canUseWallet && ' (insuffisant)'}
@@ -468,7 +468,7 @@ export default function SubscriptionsPage() {
             },
             {
               q: 'Quels moyens de paiement acceptez-vous?',
-              a: 'Nous acceptons MTN Mobile Money, Moov Money, et le paiement via votre portefeuille AfriBook.'
+              a: 'Nous acceptons MTN Mobile Money, Moov Money, et le paiement via votre portefeuille BookShell.'
             },
           ].map((faq, index) => (
             <details key={index} className="card group">

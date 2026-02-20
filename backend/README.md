@@ -1,7 +1,7 @@
-# Laravel Backend for AfriBook
+# Laravel Backend for BookShell
 
 This folder contains a _stand-alone_ Laravel 12 application that can serve as the external backend
-service for the AfriBook front-end. It exposes a simple REST API and uses
+service for the BookShell front-end. It exposes a simple REST API and uses
 Eloquent models to mirror the Prisma schema used by the Next.js version.
 
 ## 🚀 Getting started
@@ -19,7 +19,7 @@ Eloquent models to mirror the Prisma schema used by the Next.js version.
    ```
    Edit `.env` to configure your database and other credentials. Example:
    ```env
-   APP_NAME=AfriBook
+   APP_NAME=BookShell
    APP_ENV=local
    APP_KEY=base64:...
    APP_URL=http://localhost:8000
@@ -30,7 +30,7 @@ Eloquent models to mirror the Prisma schema used by the Next.js version.
    # DB_CONNECTION=pgsql
    # DB_HOST=127.0.0.1
    # DB_PORT=5432
-   # DB_DATABASE=afribook
+   # DB_DATABASE=BookShell
    # DB_USERNAME=...
    # DB_PASSWORD=...
    ```

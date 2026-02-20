@@ -2,48 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Report;
 use Illuminate\Http\Request;
 
-class ReportController extends Controller
+class ReportController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Report::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'reporter_id' => 'required|exists:users,id',
+        'target_id' => 'sometimes|exists:users,id',
+        'post_id' => 'sometimes|exists:posts,id',
+        'comment_id' => 'sometimes|exists:comments,id',
+        'reason' => 'required|string',
+        'description' => 'sometimes|string',
+        'status' => 'sometimes|string',
+        'resolved_by' => 'sometimes|exists:users,id',
+        'resolved_at' => 'sometimes|date',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['reporter','target','post','comment','resolver'];
     }
 }

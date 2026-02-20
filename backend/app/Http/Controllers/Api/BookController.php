@@ -28,7 +28,8 @@ class BookController extends Controller
         $limit = (int) $request->query('limit', 12);
         $limit = max(1, min($limit, 100)); // Between 1 and 100
         
-        $books = $query->paginate($limit);
+        // eager load review summaries and favorites counts if needed
+        $books = $query->withCount('reviews','favorites')->paginate($limit);
         return response()->json($books);
     }
 
@@ -66,7 +67,14 @@ class BookController extends Controller
 
     public function show(string $id)
     {
-        $book = Book::with(['category', 'seller', 'reviews.user'])->find($id);
+        $book = Book::with([
+            'category',
+            'seller',
+            'reviews.user',
+            'orderItems',
+            'cartItems',
+            'favorites',
+        ])->withCount('reviews','favorites')->find($id);
         if (!$book) {
             return response()->json(['error' => 'Book not found'], 404);
         }

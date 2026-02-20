@@ -64,7 +64,7 @@ class PaymentService {
           currency: 'XOF',
           phoneNumber,
           externalId: transaction.id,
-          payerMessage: 'Recharge AfriBook',
+          payerMessage: 'Recharge BookShell',
           payeeNote: `Recharge wallet ${wallet.id}`,
         })
       } else if (provider === PaymentProvider.MOOV_MONEY) {
@@ -72,7 +72,7 @@ class PaymentService {
           amount,
           currency: 'XOF',
           phoneNumber,
-          description: 'Recharge AfriBook',
+          description: 'Recharge BookShell',
           transactionId: transaction.id,
         })
       } else {
@@ -154,7 +154,7 @@ class PaymentService {
           currency: 'XOF',
           phoneNumber,
           externalId: transaction.id,
-          payerMessage: 'Retrait AfriBook',
+          payerMessage: 'Retrait BookShell',
           payeeNote: `Retrait wallet ${wallet.id}`,
         })
       } else if (provider === PaymentProvider.MOOV_MONEY) {
@@ -162,7 +162,7 @@ class PaymentService {
           amount,
           currency: 'XOF',
           phoneNumber,
-          description: 'Retrait AfriBook',
+          description: 'Retrait BookShell',
           transactionId: transaction.id,
         })
       } else {

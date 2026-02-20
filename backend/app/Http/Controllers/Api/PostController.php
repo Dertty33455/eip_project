@@ -2,48 +2,28 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
-class PostController extends Controller
+class PostController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Post::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'author_id' => 'required|exists:users,id',
+        'type' => 'required|string',
+        'content' => 'required|string',
+        'images' => 'sometimes|array',
+        'book_title' => 'sometimes|string',
+        'book_author' => 'sometimes|string',
+        'rating' => 'sometimes|numeric|min:0|max:5',
+        'is_published' => 'sometimes|boolean',
+        'is_reported' => 'sometimes|boolean',
+        'view_count' => 'sometimes|integer',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['author', 'comments', 'likes', 'shares', 'reports'];
     }
 }

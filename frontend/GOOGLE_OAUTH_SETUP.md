@@ -12,7 +12,7 @@
 1. Allez sur [Google Cloud Console](https://console.cloud.google.com)
 2. Cliquez sur le sélecteur de projet en haut
 3. Cliquez sur "Nouveau projet"
-4. Nommez votre projet (ex: "AfriBook Platform")
+4. Nommez votre projet (ex: "BookShell Platform")
 5. Cliquez sur "Créer"
 
 ### 2. Activer l'API Google+
@@ -28,7 +28,7 @@
 2. Sélectionnez "Externe" comme type d'utilisateur
 3. Cliquez sur "Créer"
 4. Remplissez les informations requises :
-   - **Nom de l'application** : AfriBook
+   - **Nom de l'application** : BookShell
    - **E-mail d'assistance utilisateur** : votre email
    - **Domaines autorisés** : localhost (pour dev) et votre domaine de production
    - **Coordonnées du développeur** : votre email
@@ -45,7 +45,7 @@
 1. Dans le menu de gauche, allez dans "API et services" > "Identifiants"
 2. Cliquez sur "Créer des identifiants" > "ID client OAuth"
 3. Sélectionnez "Application Web" comme type d'application
-4. Nommez votre client OAuth (ex: "AfriBook Web Client")
+4. Nommez votre client OAuth (ex: "BookShell Web Client")
 5. Ajoutez des **URI de redirection autorisées** :
    - Pour le développement : `http://localhost:3001/api/auth/callback/google`
    - Pour la production : `https://votre-domaine.com/api/auth/callback/google`
@@ -159,4 +159,4 @@ Pour plus d'informations :
 
 ---
 
-**Note** : Cette configuration vous permet d'offrir à vos utilisateurs une connexion simple et sécurisée via leur compte Google, tout en créant automatiquement leur profil AfriBook. 🚀
+**Note** : Cette configuration vous permet d'offrir à vos utilisateurs une connexion simple et sécurisée via leur compte Google, tout en créant automatiquement leur profil BookShell. 🚀

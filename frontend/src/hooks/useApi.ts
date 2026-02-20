@@ -37,7 +37,7 @@ export function useApi<T = any>() {
       // Get token from localStorage for Bearer auth
       let token = ''
       if (typeof window !== 'undefined') {
-        const authData = localStorage.getItem('afribook-auth')
+        const authData = localStorage.getItem('BookShell-auth')
         if (authData) {
           try {
             const parsed = JSON.parse(authData)

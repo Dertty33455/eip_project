@@ -2,48 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
-class NotificationController extends Controller
+class NotificationController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Notification::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'user_id' => 'required|exists:users,id',
+        'type' => 'required|string',
+        'title' => 'required|string',
+        'message' => 'required|string',
+        'link' => 'sometimes|url',
+        'is_read' => 'sometimes|boolean',
+        'metadata' => 'sometimes|json',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user'];
     }
 }

@@ -24,15 +24,15 @@ const ubuntu = Ubuntu({
 })
 
 export const metadata: Metadata = {
-  title: 'AfriBook - Plateforme Africaine de Livres & Audiobooks',
+  title: 'BookShell - Plateforme Africaine de Livres & Audiobooks',
   description: 'Découvrez la première marketplace africaine de livres et livres audio. Achetez, vendez et partagez vos lectures avec la communauté.',
   keywords: ['livres africains', 'audiobooks', 'marketplace', 'littérature africaine', 'mobile money'],
-  authors: [{ name: 'AfriBook' }],
+  authors: [{ name: 'BookShell' }],
   openGraph: {
-    title: 'AfriBook - Plateforme Africaine de Livres & Audiobooks',
+    title: 'BookShell - Plateforme Africaine de Livres & Audiobooks',
     description: 'Découvrez la première marketplace africaine de livres et livres audio.',
-    url: 'https://afribook.com',
-    siteName: 'AfriBook',
+    url: 'https://BookShell.com',
+    siteName: 'BookShell',
     type: 'website',
     locale: 'fr_FR',
   },

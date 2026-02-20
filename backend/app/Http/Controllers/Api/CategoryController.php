@@ -2,19 +2,34 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
-class CategoryController extends Controller
+class CategoryController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected string $modelClass = Category::class;
+
+    protected array $rules = [
+        'name' => 'required|string',
+        'slug' => 'sometimes|string|unique:categories,slug',
+        'description' => 'sometimes|string',
+        'icon' => 'sometimes|string',
+        'image' => 'sometimes|string',
+        'parent_id' => 'sometimes|exists:categories,id',
+        'is_active' => 'sometimes|boolean',
+        'order' => 'sometimes|integer',
+    ];
+
+    protected function withRelations(): ?array
+    {
+        return ['children','books','audiobooks'];
+    }
+
+    public function index(Request $request)
     {
         $categories = Category::where('is_active', true)
             ->orderBy('order')
+            ->with('children')
             ->get();
         
         return response()->json([
@@ -22,41 +37,14 @@ class CategoryController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $category = Category::find($id);
+        $category = Category::with(['children','books','audiobooks'])->find($id);
         
         if (!$category) {
             return response()->json(['error' => 'Category not found'], 404);
         }
         
         return response()->json($category);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

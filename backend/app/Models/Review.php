@@ -36,6 +36,21 @@ class Review extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    public function book(): BelongsTo
+    {
+        return $this->belongsTo(Book::class);
+    }
+
+    public function audiobook(): BelongsTo
+    {
+        return $this->belongsTo(Audiobook::class);
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+
     /**
      * Get the review comment in camelCase format (alias for content).
      */

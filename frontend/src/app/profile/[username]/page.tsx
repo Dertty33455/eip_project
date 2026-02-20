@@ -248,8 +248,8 @@ export default function ProfilePage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${profile?.firstName} ${profile?.lastName} sur AfriBook`,
-          text: `Découvrez le profil de ${profile?.firstName} sur AfriBook`,
+          title: `${profile?.firstName} ${profile?.lastName} sur BookShell`,
+          text: `Découvrez le profil de ${profile?.firstName} sur BookShell`,
           url: window.location.href
         })
       } catch (error) {

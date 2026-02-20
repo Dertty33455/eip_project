@@ -2,48 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
-class ReviewController extends Controller
+class ReviewController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Review::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'author_id' => 'required|exists:users,id',
+        'type' => 'required|string',
+        'book_id' => 'sometimes|exists:books,id',
+        'audiobook_id' => 'sometimes|exists:audiobooks,id',
+        'seller_id' => 'sometimes|exists:users,id',
+        'rating' => 'required|numeric|min:0|max:5',
+        'title' => 'sometimes|string',
+        'content' => 'sometimes|string',
+        'is_verified' => 'sometimes|boolean',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['user','book','audiobook','seller'];
     }
 }

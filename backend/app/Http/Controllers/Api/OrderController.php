@@ -2,48 +2,39 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
 
-class OrderController extends Controller
+class OrderController extends CrudController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    protected string $modelClass = Order::class;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    protected array $rules = [
+        'order_number' => 'required|string|unique:orders,order_number',
+        'buyer_id' => 'required|exists:users,id',
+        'seller_id' => 'required|exists:users,id',
+        'status' => 'sometimes|string',
+        'subtotal' => 'sometimes|numeric',
+        'commission' => 'sometimes|numeric',
+        'seller_amount' => 'sometimes|numeric',
+        'delivery_fee' => 'sometimes|numeric',
+        'total_amount' => 'sometimes|numeric',
+        'currency' => 'sometimes|string',
+        'delivery_type' => 'sometimes|string',
+        'delivery_address' => 'sometimes|string',
+        'delivery_city' => 'sometimes|string',
+        'delivery_country' => 'sometimes|string',
+        'delivery_phone' => 'sometimes|string',
+        'tracking_number' => 'sometimes|string',
+        'notes' => 'sometimes|string',
+        'paid_at' => 'sometimes|date',
+        'shipped_at' => 'sometimes|date',
+        'delivered_at' => 'sometimes|date',
+        'cancelled_at' => 'sometimes|date',
+    ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    protected function withRelations(): ?array
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return ['buyer','seller','items','invoice','transactions'];
     }
 }

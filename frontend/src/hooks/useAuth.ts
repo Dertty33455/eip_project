@@ -69,7 +69,7 @@ const useAuthStore = create<AuthState>()(
       clearAuth: () => set({ user: null, wallet: null, subscription: null, token: null }),
     }),
     {
-      name: 'afribook-auth',
+      name: 'BookShell-auth',
       partialize: (state) => ({ user: state.user, token: state.token }),
     }
   )
