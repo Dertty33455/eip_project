@@ -91,6 +91,14 @@ export function useAuth() {
     }
   }, [])
 
+  // whenever the token changes (for example after OAuth callback)
+  // fetch the user data again so the store stays in sync
+  useEffect(() => {
+    if (mounted && token) {
+      fetchUser()
+    }
+  }, [token, mounted])
+
   const fetchUser = async () => {
     try {
       const { data, error } = await api.get('/api/auth/me')
@@ -198,6 +206,9 @@ export function useAuth() {
     token: mounted ? token : null,
     isLoading: !mounted || isLoading,
     isAuthenticated: !!user && !!token,
+    setToken,
+    fetchUser, // expose for manual calls if ever needed
+  
     login,
     register,
     logout,

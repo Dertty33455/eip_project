@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -75,6 +77,54 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    public function redirectToGoogle()
+    {
+        // This starts the OAuth flow. we use stateless because the SPA
+        // doesn't maintain Laravel session state.
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $socialUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Unable to authenticate with Google'], 400);
+        }
+
+        // create or update local user record
+        $user = User::firstOrCreate(
+            ['email' => $socialUser->getEmail()],
+            [
+                'first_name' => $this->splitName($socialUser->getName())['first'],
+                'last_name' => $this->splitName($socialUser->getName())['last'],
+                'username' => Str::slug($socialUser->getNickname() ?? $socialUser->getName(), '_') ?: 'user_'.Str::random(6),
+                'password' => Hash::make(Str::random(16)), // random password since login is via Google
+            ]
+        );
+
+        $token = $user->createToken('api_token')->plainTextToken;
+        $user->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
+
+        // redirect back to frontend with token in query string
+        $frontend = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:3000'));
+        return redirect($frontend . '/auth/callback?token=' . $token);
+    }
+
+    /**
+     * Helper to split a full name into first/last.
+     */
+    protected function splitName($name)
+    {
+        $parts = explode(' ', trim($name));
+        if (count($parts) === 1) {
+            return ['first' => $parts[0], 'last' => ''];
+        }
+        $first = array_shift($parts);
+        $last = implode(' ', $parts);
+        return ['first' => $first, 'last' => $last];
     }
 
     public function updateProfile(Request $request)

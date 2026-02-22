@@ -68,6 +68,28 @@ Laravel Sanctum is installed and provides token-based authentication. The
 `User` model uses the `HasApiTokens` trait, and the `auth:sanctum` middleware
 is applied to protected routes in `routes/api.php`.
 
+### Google OAuth (Socialite)
+A simple OAuth flow has been added so that users can sign in with Google.
+The controller methods `redirectToGoogle` and `handleGoogleCallback` live in
+`App\Http\Controllers\Api\AuthController`.  When the callback is hit the
+backend creates or updates a user record, issues a Sanctum token and
+redirects to the frontend `
+/auth/callback?token=<token>` page (see frontend code).
+
+To enable this flow:
+
+1. Run `composer require laravel/socialite` (already added to `composer.json`).
+2. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and
+   `GOOGLE_REDIRECT_URL` to your `.env` file (see `.env.example`).
+3. Optionally set `FRONTEND_URL` so the callback knows where to send the user.
+4. Register your OAuth credentials in Google Cloud Console and include the
+   redirect URL (`http://localhost:8000/api/auth/google/callback` by default)
+   as an authorised URI.
+
+The front-end portion is handled by the Next.js project; it simply redirects
+users to `/api/auth/google/redirect` and then reads the returned token at
+`/auth/callback`.
+
 ## 🧩 Extending the service
 To fully replace the existing Next.js backend you will need to implement:
 

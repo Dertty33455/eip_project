@@ -140,12 +140,9 @@ export default function RegisterPage() {
   const strengthLabels = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort']
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500']
   
-  const handleGoogleSignup = async () => {
-    try {
-      await signIn('google', { callbackUrl: '/' })
-    } catch (error) {
-      toast.error('Erreur lors de l\'inscription avec Google')
-    }
+  const handleGoogleSignup = () => {
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    window.location.href = `${base}/api/auth/google/redirect`
   }
 
   return (

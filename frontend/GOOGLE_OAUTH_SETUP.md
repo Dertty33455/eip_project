@@ -1,4 +1,4 @@
-# Configuration de l'authentification Google OAuth
+# Configuration de l'authentification Google OAuth (avec backend Laravel)
 
 ## Prérequis
 
@@ -54,18 +54,31 @@
 
 ### 5. Configurer les variables d'environnement
 
-1. Ouvrez le fichier `.env` à la racine du projet
-2. Ajoutez vos credentials :
+> **Côté Laravel**
+> 1. Copiez les variables suivantes dans le `.env` de l'API (`/backend/.env`).
+> 2. Ajoutez également la redirection vers le frontend : 
+>
+> ```env
+> # Google OAuth (Laravel Socialite)
+> GOOGLE_CLIENT_ID="votre-client-id-ici"
+> GOOGLE_CLIENT_SECRET="votre-client-secret-ici"
+> GOOGLE_REDIRECT_URL="http://localhost:8000/api/auth/google/callback"
+> 
+> # (si vous utilisez sanctum/front-end, vérifiez aussi que SANCTUM_STATEFUL_DOMAINS inclut votre domaine)
+> ```
+>
+> Laravel utilisera ces variables dans `config/services.php`.
 
-```env
-# Google OAuth
-GOOGLE_CLIENT_ID="votre-client-id-ici"
-GOOGLE_CLIENT_SECRET="votre-client-secret-ici"
+> **Côté Frontend**
+> 1. Assurez‑vous de définir l'URL de l'API dans `NEXT_PUBLIC_API_URL` :
+>
+> ```env
+> NEXT_PUBLIC_API_URL="http://localhost:8000"
+> ```
+>
+> 2. Nous avons créé une page client `/auth/callback` qui lit le token reçu en query
+>    et le stocke dans le store Zustand. C'est le point de retour de l'OAuth.
 
-# NextAuth
-NEXTAUTH_URL="http://localhost:3001"  # Changez pour votre domaine en production
-NEXTAUTH_SECRET="votre-secret-aleatoire-de-32-chars-minimum"
-```
 
 3. Pour générer un `NEXTAUTH_SECRET` sécurisé, exécutez :
 ```bash
@@ -74,16 +87,14 @@ openssl rand -base64 32
 
 ### 6. Tester la connexion Google
 
-1. Démarrez le serveur de développement :
-```bash
-npm run dev
-```
+1. Lancez d'abord l'API Laravel : `php artisan serve --port=8000` ou via votre conteneur.
+2. Lancez ensuite le frontend : `npm run dev`.
+3. Ouvrez http://localhost:3000/login dans votre navigateur.
+4. Cliquez sur "Continuer avec Google". l'application envoie vers l'API,
+   Google vous demande l'autorisation, puis l'API redirige vers
+   `http://localhost:3000/auth/callback?token=...`.
+5. La page de callback stocke le token et vous ramène à l'accueil déjà connecté.
 
-2. Allez sur http://localhost:3001/login
-3. Cliquez sur "Continuer avec Google"
-4. Connectez-vous avec votre compte Google (compte test si en développement)
-5. Acceptez les permissions demandées
-6. Vous devriez être redirigé vers la page d'accueil, connecté!
 
 ## Déploiement en production
 
