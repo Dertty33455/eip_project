@@ -40,4 +40,19 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URL'),
     ],
+
+    'mtn_momo' => [
+        'api_key' => env('MTN_MOMO_API_KEY'),
+        'user_id' => env('MTN_MOMO_USER_ID'),
+        'subscription_key' => env('MTN_MOMO_SUBSCRIPTION_KEY'),
+        'base_url' => env('MTN_MOMO_API_URL'),
+        'callback' => env('MTN_MOMO_CALLBACK_URL'),
+    ],
+
+    'moov_money' => [
+        'api_key' => env('MOOV_MONEY_API_KEY'),
+        'merchant_id' => env('MOOV_MONEY_MERCHANT_ID'),
+        'base_url' => env('MOOV_MONEY_API_URL'),
+        'callback' => env('MOOV_MONEY_CALLBACK_URL'),
+    ],
 ];

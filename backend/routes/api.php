@@ -68,6 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::apiResource('categories', CategoryController::class); // now public
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('wallets', WalletController::class);
+    // additional wallet operations
+    Route::post('wallet/deposit', [WalletController::class, 'deposit']);
+    Route::post('wallet/withdraw', [WalletController::class, 'withdraw']);
     Route::apiResource('transactions', TransactionController::class);
     Route::apiResource('carts', CartController::class);
     Route::apiResource('cart-items', CartItemController::class);
@@ -93,6 +96,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('analytics', AnalyticsController::class);
 
     // manage related audiobooks (protected)
+
+    // audiobooks related management (protected)
     Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);
     Route::delete('audiobooks/{id}/related/{relatedId}', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'destroy']);
 });
+
+// webhook endpoints (public)
+// support GET for browser visit / sanity check
+Route::match(['get','post'], 'webhooks/mtn', [\App\Http\Controllers\Api\WebhookController::class, 'mtn']);
+Route::match(['get','post'], 'webhooks/moov', [\App\Http\Controllers\Api\WebhookController::class, 'moov']);
+
