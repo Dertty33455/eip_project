@@ -28,7 +28,7 @@ export function useApi<T = any>() {
     url: string,
     options?: RequestInit,
     apiOptions?: ApiOptions
-  ): Promise<{ data: T | null; error: string | null }> => {
+  ): Promise<{ data: T | null; error: string | null; raw?: any }> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
     
     try {
@@ -58,23 +58,52 @@ export function useApi<T = any>() {
         headers['Authorization'] = `Bearer ${token}`
       }
 
+      // Laravel Sanctum requires a CSRF cookie for state-changing requests and
+      // also the request to include credentials so the cookie is sent back.
+      if (
+        options?.method &&
+        ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())
+      ) {
+        // ignore the response, we just need the cookie to be set
+        await fetch(`${API_BASE}/sanctum/csrf-cookie`, {
+          credentials: 'include',
+        })
+
+        // read the XSRF token cookie and attach as header for the next request
+        if (typeof document !== 'undefined') {
+          const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
+          if (match) {
+            headers['X-XSRF-TOKEN'] = decodeURIComponent(match[1])
+          }
+        }
+      }
+
       const res = await fetch(fullUrl, {
         ...options,
         headers,
+        credentials: 'include', // send cookies for auth/session
       })
       
       const text = await res.text()
       const data = text ? JSON.parse(text) : null
       
       if (!res.ok) {
-        const errorMessage = data.error || data.message || 'Une erreur est survenue'
+        // Try to surface validation errors if provided
+        let errorMessage = data.error || data.message || 'Une erreur est survenue'
+        if (data.errors) {
+          // Laravel returns an object of arrays; join them into a single string
+          const flat = Object.values(data.errors).flat()
+          if (flat.length) {
+            errorMessage = flat.join(' ')
+          }
+        }
         setState({ data: null, error: errorMessage, isLoading: false })
         
         if (apiOptions?.showErrorToast !== false) {
           toast.error(errorMessage)
         }
         
-        return { data: null, error: errorMessage }
+        return { data: null, error: errorMessage, raw: data }
       }
       
       setState({ data, error: null, isLoading: false })
@@ -304,12 +333,29 @@ export function usePosts() {
         }
       })
     }
-    return api.get(`/api/posts?${searchParams.toString()}`)
+    const { data, error } = await api.get(`/api/posts?${searchParams.toString()}`)
+    
+    // Transform Laravel pagination format
+    if (data && !error) {
+      return {
+        data: {
+          posts: data.data || [],
+          pagination: {
+            page: data.current_page || 1,
+            total: data.total || 0,
+            pages: data.last_page || 1,
+          }
+        },
+        error: null
+      }
+    }
+    return { data: null, error }
   }, [api])
 
   const createPost = useCallback(async (data: {
     content: string
     images?: string[]
+    type?: string
   }) => {
     return api.post('/api/posts', data, {
       showSuccessToast: true,
@@ -318,11 +364,22 @@ export function usePosts() {
   }, [api])
 
   const likePost = useCallback(async (postId: string) => {
-    return api.post(`/api/posts/${postId}/like`, {})
+    return api.post(`/api/posts/${postId}/like`, {}, {
+      showErrorToast: false
+    })
   }, [api])
 
   const commentPost = useCallback(async (postId: string, content: string) => {
-    return api.post(`/api/posts/${postId}/comments`, { content })
+    return api.post(`/api/posts/${postId}/comment`, { content }, {
+      showErrorToast: false
+    })
+  }, [api])
+
+  const sharePost = useCallback(async (postId: string, platform?: string) => {
+    return api.post(`/api/posts/${postId}/share`, { platform }, {
+      showSuccessToast: true,
+      successMessage: 'Post partagé!',
+    })
   }, [api])
 
   return {
@@ -331,6 +388,7 @@ export function usePosts() {
     createPost,
     likePost,
     commentPost,
+    sharePost,
   }
 }
 

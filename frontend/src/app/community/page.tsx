@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -16,7 +17,7 @@ import {
   FiTrendingUp,
   FiBook
 } from 'react-icons/fi'
-// import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { usePosts } from '@/hooks/useApi'
 import toast from 'react-hot-toast'
 
@@ -26,28 +27,95 @@ const fadeInUp = {
 }
 
 // Post Card Component
-function PostCard({ post, onLike, onComment }: { 
+function PostCard({ post, onLike, onComment, onShare }: { 
   post: any
-  onLike: (postId: string) => void
-  onComment: (postId: string, content: string) => void 
+  onLike: (postId: string) => Promise<void>
+  onComment: (postId: string, content: string) => Promise<void>
+  onShare: (postId: string) => Promise<void>
 }) {
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
   const [showComments, setShowComments] = useState(false)
   const [commentText, setCommentText] = useState('')
-  const [isLiked, setIsLiked] = useState(post.isLiked || false)
-  const [likesCount, setLikesCount] = useState(post._count?.likes || 0)
+  // Calculate if user has liked this post
+  const [isLiked, setIsLiked] = useState(post.likes?.some((like: any) => like.user_id === user?.id) || false)
+  const [likesCount, setLikesCount] = useState(post._count?.likes || post.likes?.length || 0)
+  const [commentsLoading, setCommentsLoading] = useState(false)
+  const [likeLoading, setLikeLoading] = useState(false)
   
-  const handleLike = async () => {
+  // Update like status when user or post changes
+  useEffect(() => {
+    setIsLiked(post.likes?.some((like: any) => like.user_id === user?.id) || false)
+  }, [post.likes, user?.id])
+  const handleLike = async (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    
+    // wait for auth to finish loading before deciding
+    if (!user && !authLoading) {
+      router.push('/login')
+      return
+    }
+    if (authLoading || likeLoading) return
+    
+    // Optimistic update
+    const wasLiked = isLiked
+    const previousCount = likesCount
+    
+    setLikeLoading(true)
     setIsLiked(!isLiked)
     setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
-    onLike(post.id)
+    
+    try {
+      const result = await onLike(post.id)
+      if (result?.likes_count !== undefined) {
+        setLikesCount(result.likes_count)
+      }
+    } catch (error) {
+      console.error('Like error:', error)
+      setIsLiked(wasLiked)
+      setLikesCount(previousCount)
+      toast.error('Erreur lors du like')
+    } finally {
+      setLikeLoading(false)
+    }
   }
   
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user && !authLoading) {
+      router.push('/login')
+      return
+    }
     if (!commentText.trim()) return
+    if (authLoading) return
     
-    onComment(post.id, commentText)
-    setCommentText('')
+    setCommentsLoading(true)
+    try {
+      await onComment(post.id, commentText)
+      setCommentText('')
+    } catch (error) {
+      toast.error('Erreur lors de l\'ajout du commentaire')
+    } finally {
+      setCommentsLoading(false)
+    }
+  }
+
+  const handleShare = async (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    
+    if (!user && !authLoading) {
+      router.push('/login')
+      return
+    }
+    if (authLoading) return
+    
+    try {
+      await onShare(post.id)
+    } catch (error) {
+      toast.error('Erreur lors du partage')
+    }
   }
   
   const formatDate = (date: string) => {
@@ -137,33 +205,6 @@ function PostCard({ post, onLike, onComment }: {
         </div>
       )}
       
-      {/* Book Reference */}
-      {post.book && (
-        <Link 
-          href={`/books/${post.book.id}`}
-          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-4 hover:bg-gray-100 transition-colors"
-        >
-          <div className="w-12 h-16 relative rounded overflow-hidden bg-gray-200">
-            {post.book.coverImage ? (
-              <Image
-                src={post.book.coverImage}
-                alt={post.book.title}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <FiBook className="w-6 h-6 text-gray-400" />
-              </div>
-            )}
-          </div>
-          <div>
-            <h5 className="font-medium text-gray-900">{post.book.title}</h5>
-            <p className="text-sm text-gray-500">{post.book.author}</p>
-          </div>
-        </Link>
-      )}
-      
       {/* Stats */}
       <div className="flex items-center gap-6 text-sm text-gray-500 pb-4 border-b">
         <span>{likesCount} j'aime</span>
@@ -175,23 +216,33 @@ function PostCard({ post, onLike, onComment }: {
       <div className="flex items-center justify-between pt-4">
         <button 
           onClick={handleLike}
+          disabled={authLoading || likeLoading}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
             isLiked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          } ${authLoading || likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <FiHeart className={`w-5 h-5 ${isLiked ? 'fill-red-500' : ''}`} />
           <span>J'aime</span>
         </button>
         
         <button 
-          onClick={() => setShowComments(!showComments)}
+          onClick={() => {
+            if (!user) {
+              router.push('/login')
+            } else {
+              setShowComments(!showComments)
+            }
+          }}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <FiMessageCircle className="w-5 h-5" />
           <span>Commenter</span>
         </button>
         
-        <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+        <button 
+          onClick={handleShare}
+          className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
           <FiShare2 className="w-5 h-5" />
           <span>Partager</span>
         </button>
@@ -207,7 +258,7 @@ function PostCard({ post, onLike, onComment }: {
           {/* Comment Form */}
           <form onSubmit={handleComment} className="flex gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-              U
+              {user?.firstName?.[0]}{user?.lastName?.[0]}
             </div>
             <div className="flex-1 relative">
               <input
@@ -219,7 +270,7 @@ function PostCard({ post, onLike, onComment }: {
               />
               <button 
                 type="submit"
-                disabled={!commentText.trim()}
+                disabled={!commentText.trim() || commentsLoading}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-primary disabled:opacity-50"
               >
                 <FiSend className="w-5 h-5" />
@@ -242,8 +293,6 @@ function PostCard({ post, onLike, onComment }: {
                     <p className="text-sm text-gray-700">{comment.content}</p>
                   </div>
                   <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                    <button className="hover:text-primary">J'aime</button>
-                    <button className="hover:text-primary">Répondre</button>
                     <span>{formatDate(comment.createdAt)}</span>
                   </div>
                 </div>
@@ -258,17 +307,20 @@ function PostCard({ post, onLike, onComment }: {
 
 // Create Post Component
 function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) => void }) {
-  const user = null;
+  const { user } = useAuth()
   const [content, setContent] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!content.trim()) return
     
-    onPost(content)
+    setIsLoading(true)
+    await onPost(content)
     setContent('')
     setIsExpanded(false)
+    setIsLoading(false)
   }
   
   return (
@@ -276,7 +328,7 @@ function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) =
       <form onSubmit={handleSubmit}>
         <div className="flex gap-4">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-            U
+            {user?.firstName?.[0]}{user?.lastName?.[0]}
           </div>
           <div className="flex-1">
             <textarea
@@ -306,10 +358,10 @@ function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) =
                 </div>
                 <button
                   type="submit"
-                  disabled={!content.trim()}
+                  disabled={!content.trim() || isLoading}
                   className="btn-primary px-6 py-2 disabled:opacity-50"
                 >
-                  Publier
+                  {isLoading ? 'Publication...' : 'Publier'}
                 </button>
               </div>
             )}
@@ -389,8 +441,8 @@ function TrendingTopics() {
 }
 
 export default function CommunityPage() {
-  const user = null; const isAuthenticated = false;
-  const { getPosts, createPost, likePost, commentPost, isLoading } = usePosts()
+  const { user } = useAuth()
+  const { getPosts, createPost, likePost, commentPost, sharePost, isLoading } = usePosts()
   const [posts, setPosts] = useState<any[]>([])
   const [filter, setFilter] = useState<'recent' | 'popular' | 'following'>('recent')
   
@@ -406,72 +458,54 @@ export default function CommunityPage() {
   }
   
   const handleCreatePost = async (content: string, images?: string[]) => {
-    if (!isAuthenticated) {
-      toast.error('Connectez-vous pour publier')
-      return
-    }
-    
     const { data, error } = await createPost({ content, images })
     if (data) {
       setPosts([data.post, ...posts])
+      toast.success('Publication créée!')
     }
   }
   
   const handleLike = async (postId: string) => {
-    if (!isAuthenticated) {
-      toast.error('Connectez-vous pour aimer')
-      return
-    }
-    await likePost(postId)
-  }
-  
-  const handleComment = async (postId: string, content: string) => {
-    if (!isAuthenticated) {
-      toast.error('Connectez-vous pour commenter')
-      return
+    const { data, error } = await likePost(postId)
+    if (error) {
+      throw new Error(error)
     }
     
-    const { data } = await commentPost(postId, content)
+    // Update the post with the new like status and count
     if (data) {
-      setPosts(posts.map(p => 
-        p.id === postId 
-          ? { ...p, comments: [...(p.comments || []), data.comment] }
+      setPosts(posts.map(p =>
+        p.id === postId
+          ? { ...p, _count: { ...p._count, likes: data.likes_count } }
           : p
       ))
     }
+    
+    return data
   }
   
-  // Demo posts
-  const demoPosts = [
-    {
-      id: '1',
-      content: 'Je viens de terminer "Les Soleils des Indépendances" d\'Ahmadou Kourouma. Un chef-d\'œuvre absolu! La façon dont il mélange le français et le malinké est fascinante. 📚✨\n\nQui d\'autre a lu ce livre? J\'aimerais en discuter!',
-      author: { firstName: 'Aminata', lastName: 'Diallo', username: 'aminata_lit' },
-      createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-      _count: { likes: 124, comments: 23, shares: 12 },
-      isLiked: false,
-      comments: []
-    },
-    {
-      id: '2',
-      content: 'Nouvelle arrivée dans ma bibliothèque! 🎉\n\nJe suis tellement excité de commencer "Une Si Longue Lettre" de Mariama Bâ. On m\'en a dit tellement de bien!',
-      author: { firstName: 'Kofi', lastName: 'Mensah', username: 'kofi_books' },
-      createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
-      _count: { likes: 89, comments: 15, shares: 8 },
-      isLiked: true,
-      comments: []
-    },
-    {
-      id: '3',
-      content: 'Conseil lecture du jour:\n\nSi vous aimez la littérature africaine contemporaine, je vous recommande vivement "L\'Aventure Ambiguë" de Cheikh Hamidou Kane. Un roman philosophique qui explore le choc des cultures.\n\n#LittératureAfricaine #ConseilLecture',
-      author: { firstName: 'Fatou', lastName: 'Ndiaye', username: 'fatou_reads' },
-      createdAt: new Date(Date.now() - 8 * 3600000).toISOString(),
-      _count: { likes: 256, comments: 42, shares: 31 },
-      isLiked: false,
-      comments: []
-    },
-  ]
-  const displayPosts = posts.length > 0 ? posts : demoPosts
+  const handleComment = async (postId: string, content: string) => {
+    const { data, error } = await commentPost(postId, content)
+    if (error) {
+      throw new Error(error)
+    }
+    if (data?.comment) {
+      setPosts(posts.map(p => 
+        p.id === postId 
+          ? { ...p, comments: [...(p.comments || []), data.comment], _count: { ...p._count, comments: (p._count?.comments || 0) + 1 } }
+          : p
+      ))
+    }
+    return data
+  }
+
+  const handleShare = async (postId: string) => {
+    const { data, error } = await sharePost(postId)
+    if (error) {
+      throw new Error(error)
+    }
+    return data
+  }
+  
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -491,7 +525,7 @@ export default function CommunityPage() {
           {/* Main Feed */}
           <div className="flex-1 max-w-2xl">
             {/* Create Post */}
-            {isAuthenticated && <CreatePost onPost={handleCreatePost} />}
+            {user && <CreatePost onPost={handleCreatePost} />}
             
             {/* Filter Tabs */}
             <div className="flex items-center gap-4 mb-6 bg-white rounded-xl p-2">
@@ -533,7 +567,7 @@ export default function CommunityPage() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : posts.length > 0 ? (
               <motion.div
                 initial="hidden"
                 animate="visible"
@@ -542,19 +576,25 @@ export default function CommunityPage() {
                 }}
                 className="space-y-6"
               >
-                {displayPosts.map((post) => (
+                {posts.map((post) => (
                   <PostCard 
                     key={post.id} 
                     post={post}
                     onLike={handleLike}
                     onComment={handleComment}
+                    onShare={handleShare}
                   />
                 ))}
               </motion.div>
+            ) : (
+              <div className="card text-center py-12">
+                <p className="text-gray-500 mb-4">Aucun post pour le moment</p>
+                {user && <p className="text-sm text-gray-400">Soyez le premier à partager!</p>}
+              </div>
             )}
             
             {/* Login CTA */}
-            {!isAuthenticated && (
+            {!user && (
               <div className="card text-center mt-8">
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   Rejoignez la conversation!

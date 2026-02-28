@@ -64,9 +64,24 @@ const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
       setWallet: (wallet) => set({ wallet }),
       setSubscription: (subscription) => set({ subscription }),
-      setToken: (token) => set({ token }),
+      setToken: (token) => {
+        set({ token })
+        // keep cookie in sync for middleware authentication
+        if (typeof document !== 'undefined') {
+          if (token) {
+            document.cookie = `auth_token=${token}; path=/;`;
+          } else {
+            document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          }
+        }
+      },
       setLoading: (isLoading) => set({ isLoading }),
-      clearAuth: () => set({ user: null, wallet: null, subscription: null, token: null }),
+      clearAuth: () => {
+        set({ user: null, wallet: null, subscription: null, token: null })
+        if (typeof document !== 'undefined') {
+          document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+      },
     }),
     {
       name: 'BookShell-auth',
@@ -98,6 +113,15 @@ export function useAuth() {
       fetchUser()
     }
   }, [token, mounted])
+
+  // ensure cookie is written when we rehydrate from persistence
+  useEffect(() => {
+    if (mounted && token) {
+      if (typeof document !== 'undefined') {
+        document.cookie = `auth_token=${token}; path=/;`
+      }
+    }
+  }, [mounted, token])
 
   const fetchUser = async () => {
     try {
@@ -145,16 +169,20 @@ export function useAuth() {
   }) => {
     try {
       setLoading(true)
-      const { data, error } = await api.post('/api/auth/register', userData)
-      if (error) throw new Error(error)
+      const { data, error, raw } = await api.post('/api/auth/register', userData)
+      if (error) {
+        // bubble up validation errors too
+        throw { message: error, validationErrors: raw?.errors }
+      }
 
       setUser(data.user)
       setToken(data.token)
       toast.success('Compte créé avec succès!')
       return { success: true }
-    } catch (error: any) {
-      toast.error(error.message)
-      return { success: false, error: error.message }
+    } catch (err: any) {
+      const message = err.message || 'Erreur lors de l\'inscription'
+      toast.error(message)
+      return { success: false, error: message, validationErrors: err.validationErrors }
     } finally {
       setLoading(false)
     }

@@ -55,6 +55,17 @@ Route::apiResource('categories', CategoryController::class, ['only' => ['index',
 // public posts endpoint
 Route::apiResource('posts', PostController::class, ['only' => ['index', 'show']]);
 
+// protected posts actions
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('posts', [PostController::class, 'store']);
+    Route::post('posts/{id}/like', [PostController::class, 'like']);
+    Route::post('posts/{id}/comment', [PostController::class, 'comment']);
+    Route::post('posts/{id}/share', [PostController::class, 'share']);
+});
+
+// public user profile by username (needed by frontend profile page)
+Route::get('/users/{username}', [\App\Http\Controllers\Api\UserController::class, 'show']);
+
 // protected routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     // Auth endpoints

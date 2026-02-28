@@ -130,76 +130,15 @@ export default function ProfilePage() {
       if (res.ok) {
         const data = await res.json()
         setProfile(data)
+      } else if (res.status === 404) {
+        setProfile(null)
       } else {
-        // Demo data
-        setProfile({
-          id: 'u1',
-          username: params.username as string,
-          firstName: 'Aminata',
-          lastName: 'Diallo',
-          bio: '📚 Passionnée de littérature africaine | 🎧 Audiophile | 🌍 Vendeuse de livres à Dakar\n\nJe partage mes découvertes littéraires et mes coups de cœur sur cette plateforme. N\'hésitez pas à me contacter pour vos commandes !',
-          email: 'aminata@example.com',
-          phone: '+221 77 123 4567',
-          city: 'Dakar',
-          country: 'Sénégal',
-          isVerified: true,
-          isSeller: true,
-          createdAt: '2023-01-15',
-          stats: {
-            booksListed: 45,
-            booksSold: 127,
-            followers: 892,
-            following: 234,
-            rating: 4.9,
-            reviewCount: 98
-          },
-          badges: [
-            { id: 'b1', name: 'Top Vendeur', description: 'Plus de 100 ventes réalisées', icon: '🏆', color: 'bg-yellow-100 text-yellow-800', earnedAt: '2024-01-01' },
-            { id: 'b2', name: 'Vendeur Vérifié', description: 'Identité vérifiée', icon: '✓', color: 'bg-green-100 text-green-800', earnedAt: '2023-02-01' },
-            { id: 'b3', name: 'Super Lecteur', description: 'Plus de 50 audiobooks écoutés', icon: '🎧', color: 'bg-blue-100 text-blue-800', earnedAt: '2024-02-01' },
-            { id: 'b4', name: 'Contributeur', description: 'Plus de 50 avis publiés', icon: '⭐', color: 'bg-purple-100 text-purple-800', earnedAt: '2023-12-01' }
-          ],
-          recentPosts: [
-            {
-              id: 'p1',
-              content: 'Je viens de terminer "Americanah" de Chimamanda Ngozi Adichie. Un chef-d\'œuvre qui explore l\'identité, la race et l\'immigration avec une profondeur remarquable. Je le recommande vivement ! 📖✨',
-              imageUrl: '/images/posts/post1.jpg',
-              likesCount: 127,
-              commentsCount: 23,
-              createdAt: '2024-01-28'
-            },
-            {
-              id: 'p2',
-              content: 'Nouveau arrivage de livres d\'occasion en excellent état ! 🎉 Romans africains, littérature francophone, et bien plus. Passez voir ma boutique !',
-              likesCount: 89,
-              commentsCount: 15,
-              createdAt: '2024-01-25'
-            },
-            {
-              id: 'p3',
-              content: 'Qui a déjà lu "Les Soleils des Indépendances" d\'Ahmadou Kourouma ? Je cherche des recommandations similaires. 🤔',
-              likesCount: 56,
-              commentsCount: 42,
-              createdAt: '2024-01-22'
-            }
-          ],
-          listedBooks: [
-            { id: 'lb1', title: 'L\'Enfant Noir', author: 'Camara Laye', price: 8500, condition: 'LIKE_NEW' },
-            { id: 'lb2', title: 'Une si longue lettre', author: 'Mariama Bâ', price: 7500, condition: 'GOOD' },
-            { id: 'lb3', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', price: 9000, condition: 'NEW' },
-            { id: 'lb4', title: 'Le Monde s\'effondre', author: 'Chinua Achebe', price: 8000, condition: 'LIKE_NEW' },
-            { id: 'lb5', title: 'Ville cruelle', author: 'Eza Boto', price: 6500, condition: 'GOOD' },
-            { id: 'lb6', title: 'L\'Aventure Ambiguë', author: 'Cheikh Hamidou Kane', price: 7000, condition: 'ACCEPTABLE' }
-          ],
-          favoriteAudiobooks: [
-            { id: 'fa1', title: 'L\'Enfant Noir', author: 'Camara Laye', duration: 18000 },
-            { id: 'fa2', title: 'L\'Aventure Ambiguë', author: 'Cheikh Hamidou Kane', duration: 21600 },
-            { id: 'fa3', title: 'Une si longue lettre', author: 'Mariama Bâ', duration: 14400 }
-          ]
-        })
+        console.error('Unexpected response fetching profile:', res.status)
+        setProfile(null)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      setProfile(null)
     } finally {
       setLoading(false)
     }

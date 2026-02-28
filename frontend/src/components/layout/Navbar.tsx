@@ -174,7 +174,7 @@ export function Navbar() {
                         </div>
                         <div className="py-2">
                           <Link
-                            href="/profile"
+                            href={user ? `/profile/${user.username}` : '/login'}
                             className="flex items-center space-x-3 px-4 py-2 text-earth-600 hover:bg-cream-50"
                             onClick={() => setShowUserMenu(false)}
                           >

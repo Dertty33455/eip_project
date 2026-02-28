@@ -13,6 +13,7 @@ class BookController extends Controller
     {
         $query = Book::with('category', 'seller');
 
+        // Search filter
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -21,9 +22,34 @@ class BookController extends Controller
             });
         }
 
-        if ($category = $request->query('category_id')) {
+        // Category filter (accept both 'category' and 'category_id')
+        if ($category = $request->query('category') ?? $request->query('category_id')) {
             $query->where('category_id', $category);
         }
+
+        // Condition filter
+        if ($condition = $request->query('condition')) {
+            $query->where('condition', $condition);
+        }
+
+        // Price range filter
+        if ($minPrice = $request->query('minPrice')) {
+            $query->where('price', '>=', $minPrice);
+        }
+        if ($maxPrice = $request->query('maxPrice')) {
+            $query->where('price', '<=', $maxPrice);
+        }
+
+        // Sorting
+        $sortBy = $request->query('sortBy', 'created_at');
+        $order = $request->query('order', 'desc');
+        
+        // Whitelist allowed sort columns to prevent SQL injection
+        $allowedSorts = ['created_at', 'price', 'title', 'rating'];
+        $sortBy = in_array($sortBy, $allowedSorts) ? $sortBy : 'created_at';
+        $order = strtolower($order) === 'asc' ? 'asc' : 'desc';
+        
+        $query->orderBy($sortBy, $order);
 
         $limit = (int) $request->query('limit', 12);
         $limit = max(1, min($limit, 100)); // Between 1 and 100

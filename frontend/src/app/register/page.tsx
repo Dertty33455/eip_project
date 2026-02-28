@@ -122,6 +122,20 @@ export default function RegisterPage() {
     
     if (result.success) {
       router.push('/')
+      return
+    }
+
+    // display backend validation errors if any
+    if (result.validationErrors) {
+      const newErrors: Record<string, string> = {}
+      for (const [field, msgs] of Object.entries(result.validationErrors)) {
+        if (Array.isArray(msgs) && msgs.length) {
+          // convert snake_case names to camel for our form fields
+          const key = field.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+          newErrors[key] = msgs.join(' ')
+        }
+      }
+      setErrors(prev => ({ ...prev, ...newErrors }))
     }
   }
   
