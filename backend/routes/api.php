@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\UserActivityController;
+use App\Http\Controllers\Api\PmfCohortController;
 
 // Placeholder login route to prevent RouteNotFoundException for API
 Route::get('/login', function () {
@@ -112,6 +113,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // user activity tracking
     Route::get('my-activities', [UserActivityController::class, 'index']);
     Route::get('my-activities/stats', [UserActivityController::class, 'stats']);
+
+    // PMF cohort tracking
+    Route::get('pmf/cohorts', [PmfCohortController::class, 'cohorts']);
+    Route::get('pmf/score', [PmfCohortController::class, 'score']);
 
     // audiobooks related management (protected)
     Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);
