@@ -4,13 +4,17 @@ import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 // ─── Types ───────────────────────────────────────────────────
+export interface CohortWeek {
+  relative_week: number
+  activation_rate: number | null
+  activated_users: number | null
+}
+
 export interface CohortData {
   cohort_week: string
-  cohort_label?: string
-  total_users: number | null
-  activated_users: number | null
-  activation_rate: number | null
-  pmf_reached: boolean | null
+  cohort_label: string
+  total_users: number
+  weeks: CohortWeek[]
 }
 
 interface CohortTableProps {
@@ -18,61 +22,15 @@ interface CohortTableProps {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
-function getActivationColor(rate: number | null): string {
-  if (rate === null) return 'bg-gray-100 text-gray-400'
-  if (rate >= 75) return 'bg-emerald-500/20 text-emerald-700'
-  if (rate >= 50) return 'bg-amber-500/20 text-amber-700'
-  return 'bg-red-500/20 text-red-700'
-}
-
-function getActivationBarColor(rate: number | null): string {
-  if (rate === null) return 'bg-gray-200'
-  if (rate >= 75) return 'bg-emerald-500'
-  if (rate >= 50) return 'bg-amber-500'
-  return 'bg-red-500'
-}
-
-function getPmfBadge(pmfReached: boolean | null) {
-  if (pmfReached === null) {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400">
-        <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-        —
-      </span>
-    )
-  }
-  if (pmfReached) {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        PMF atteint
-      </span>
-    )
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-      Non atteint
-    </span>
-  )
-}
-
-function formatWeekLabel(week: string): string {
-  // Handle "2026-W10" format
-  if (week.includes('-W')) {
-    const parts = week.split('-W')
-    return `S${parts[1]}`
-  }
-  // Handle ISO date "2026-03-02" format
-  try {
-    const date = new Date(week)
-    const day = date.getDate()
-    const months = ['jan', 'fév', 'mar', 'avr', 'mai', 'jun', 'jul', 'aoû', 'sep', 'oct', 'nov', 'déc']
-    const month = months[date.getMonth()]
-    return `${day} ${month}`
-  } catch {
-    return week
-  }
+function getCellColor(rate: number | null): {
+  bg: string
+  text: string
+} {
+  if (rate === null) return { bg: 'bg-gray-50', text: 'text-gray-300' }
+  if (rate >= 75) return { bg: 'bg-emerald-500', text: 'text-white' }
+  if (rate >= 60) return { bg: 'bg-yellow-400', text: 'text-gray-900' }
+  if (rate >= 45) return { bg: 'bg-orange-400', text: 'text-white' }
+  return { bg: 'bg-red-500', text: 'text-white' }
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────
@@ -123,141 +81,135 @@ export default function CohortTable({ data }: CohortTableProps) {
   // Sort chronologically
   const sorted = [...data].sort((a, b) => a.cohort_week.localeCompare(b.cohort_week))
 
-  const rowVariants = {
-    hidden: { opacity: 0, x: -10 },
+  // Calculate max week to determine column count
+  const maxWeek = Math.max(...sorted.flatMap((c) => c.weeks.map((w) => w.relative_week)))
+
+  const weeks = Array.from({ length: maxWeek + 1 }, (_, i) => i)
+
+  const cellVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
     visible: (i: number) => ({
       opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.04, duration: 0.3 },
+      scale: 1,
+      transition: { delay: i * 0.02, duration: 0.3 },
     }),
   }
 
   return (
     <div className="w-full">
-      {/* PMF Target Indicator */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="w-3 h-3 rounded-sm bg-red-500/20 border border-red-200" />
-          <span>&lt; 50%</span>
+      {/* Legend */}
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-emerald-500" />
+          <span className="text-xs font-medium text-gray-600">≥ 75% (PMF)</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="w-3 h-3 rounded-sm bg-amber-500/20 border border-amber-200" />
-          <span>50-74%</span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-yellow-400" />
+          <span className="text-xs font-medium text-gray-600">60-74%</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-200" />
-          <span>≥ 75% (PMF)</span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-orange-400" />
+          <span className="text-xs font-medium text-gray-600">45-59%</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="w-3 h-3 rounded-sm bg-gray-100 border border-gray-200" />
-          <span>N/A</span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-red-500" />
+          <span className="text-xs font-medium text-gray-600">&lt; 45%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded bg-gray-50 border border-gray-200" />
+          <span className="text-xs font-medium text-gray-600">N/A</span>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Heatmap Table */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table className="w-full min-w-[600px]">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5 bg-gray-50/70">
+            <tr className="border-b border-gray-200 bg-gray-50">
+              <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider px-4 py-3 min-w-[140px]">
                 Cohorte
               </th>
-              <th className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5 bg-gray-50/70">
+              <th className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider px-2 py-3 min-w-[60px]">
                 Utilisateurs
               </th>
-              <th className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5 bg-gray-50/70 min-w-[200px]">
-                Activation 7j
-              </th>
-              <th className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5 bg-gray-50/70">
-                Statut PMF
-              </th>
+              {weeks.map((week) => (
+                <th
+                  key={week}
+                  className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider px-2 py-3 min-w-[50px]"
+                >
+                  W{week}
+                </th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
-            {sorted.map((cohort, index) => (
-              <motion.tr
-                key={cohort.cohort_week}
-                custom={index}
-                variants={rowVariants}
-                initial="hidden"
-                animate="visible"
-                className="group hover:bg-primary-50/30 transition-colors duration-200"
-              >
-                {/* Cohort Week */}
-                <td className="px-5 py-4">
+          <tbody className="divide-y divide-gray-100">
+            {sorted.map((cohort, rowIdx) => (
+              <tr key={cohort.cohort_week} className="hover:bg-gray-50/50 transition-colors">
+                {/* Cohort label */}
+                <td className="px-4 py-3 text-left">
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray-900">
-                      {cohort.cohort_label || formatWeekLabel(cohort.cohort_week)}
+                      {cohort.cohort_label}
                     </span>
-                    <span className="text-xs text-gray-400 mt-0.5">
+                    <span className="text-xs text-gray-400">
                       {cohort.cohort_week}
                     </span>
                   </div>
                 </td>
 
-                {/* Total Users */}
-                <td className="px-5 py-4 text-center">
+                {/* Total users */}
+                <td className="px-2 py-3 text-center">
                   <span className="text-sm font-medium text-gray-700">
-                    {cohort.total_users !== null ? cohort.total_users : '—'}
+                    {cohort.total_users}
                   </span>
                 </td>
 
-                {/* Activation Rate (heatmap cell) */}
-                <td className="px-5 py-4">
-                  <Tooltip
-                    content={
-                      <div className="space-y-1">
-                        <div className="font-semibold border-b border-white/20 pb-1 mb-1">
-                          {cohort.cohort_label || cohort.cohort_week}
+                {/* Heatmap cells */}
+                {weeks.map((week, colIdx) => {
+                  const weekData = cohort.weeks.find((w) => w.relative_week === week)
+                  const rate = weekData?.activation_rate
+                  const colors = getCellColor(rate)
+
+                  return (
+                    <td key={week} className="px-2 py-3 text-center">
+                      {rate !== null && rate !== undefined ? (
+                        <Tooltip
+                          content={
+                            <div className="space-y-1">
+                              <div className="font-semibold border-b border-white/20 pb-1 mb-1">
+                                {cohort.cohort_label} • Week {week}
+                              </div>
+                              <div>Taux : {rate.toFixed(1)}%</div>
+                              <div>
+                                Utilisateurs : {weekData?.activated_users ?? '—'} /
+                                {cohort.total_users}
+                              </div>
+                            </div>
+                          }
+                        >
+                          <motion.div
+                            custom={rowIdx * weeks.length + colIdx}
+                            variants={cellVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className={`
+                              rounded-md py-2 px-1.5 text-xs font-bold
+                              cursor-help transition-transform duration-200 hover:scale-110
+                              ${colors.bg} ${colors.text}
+                            `}
+                          >
+                            {rate.toFixed(0)}%
+                          </motion.div>
+                        </Tooltip>
+                      ) : (
+                        <div className="rounded-md py-2 px-1.5 bg-gray-50 text-gray-300 text-xs font-medium">
+                          —
                         </div>
-                        <div>Total : {cohort.total_users ?? '—'} utilisateurs</div>
-                        <div>Activés : {cohort.activated_users ?? '—'} utilisateurs</div>
-                        <div>Taux : {cohort.activation_rate !== null ? `${cohort.activation_rate.toFixed(1)}%` : '—'}</div>
-                        <div className="pt-1 border-t border-white/20">
-                          Objectif PMF : 75%
-                        </div>
-                      </div>
-                    }
-                  >
-                    <div className="flex items-center gap-3">
-                      {/* Rate badge */}
-                      <div
-                        className={`
-                          flex-shrink-0 w-16 py-1.5 rounded-md text-center text-xs font-bold
-                          transition-all duration-500
-                          ${getActivationColor(cohort.activation_rate)}
-                        `}
-                      >
-                        {cohort.activation_rate !== null
-                          ? `${cohort.activation_rate.toFixed(1)}%`
-                          : '—'}
-                      </div>
-
-                      {/* Progress bar */}
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ease-out ${getActivationBarColor(cohort.activation_rate)}`}
-                          style={{
-                            width: cohort.activation_rate !== null
-                              ? `${Math.min(cohort.activation_rate, 100)}%`
-                              : '0%',
-                          }}
-                        />
-                      </div>
-
-                      {/* 75% marker */}
-                      <div className="relative flex-shrink-0 w-0 -ml-[27%]">
-                        <div className="absolute -top-1 w-px h-4 bg-gray-300" title="Objectif 75%" />
-                      </div>
-                    </div>
-                  </Tooltip>
-                </td>
-
-                {/* PMF Status */}
-                <td className="px-5 py-4 text-center">
-                  {getPmfBadge(cohort.pmf_reached)}
-                </td>
-              </motion.tr>
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
             ))}
           </tbody>
         </table>

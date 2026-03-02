@@ -24,6 +24,19 @@ interface PmfScoreData {
     target_met: boolean | null
 }
 
+interface CohortWeek {
+    relative_week: number
+    activation_rate: number | null
+    activated_users: number | null
+}
+
+interface CohortData {
+    cohort_week: string
+    cohort_label: string
+    total_users: number
+    weeks: CohortWeek[]
+}
+
 interface CohortsResponse {
     pmf_target: number
     cohorts: Array<{
@@ -39,52 +52,131 @@ interface CohortsResponse {
     }>
 }
 
+const STATIC_COHORT_DATA: CohortData[] = [
+    {
+        cohort_week: '2026-01-13',
+        cohort_label: 'Jan 13 - 19',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+            { relative_week: 5, activation_rate: 0, activated_users: 0 },
+            { relative_week: 6, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-01-20',
+        cohort_label: 'Jan 20 - 26',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+            { relative_week: 5, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-01-27',
+        cohort_label: 'Jan 27 - Feb 2',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-03',
+        cohort_label: 'Feb 3 - 9',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-10',
+        cohort_label: 'Feb 10 - 16',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-17',
+        cohort_label: 'Feb 17 - 23',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-24',
+        cohort_label: 'Feb 24 - Mar 2',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+]
+
+const STATIC_PMF_SCORE: PmfScoreData = {
+    pmf_target: 75,
+    latest_cohort: '2026-02-24',
+    total_users: 0,
+    users_with_audio_7d: 0,
+    score: 0,
+    target_met: false,
+}
+
 function transformCohorts(response: CohortsResponse | null): CohortData[] {
-    if (!response?.cohorts) return []
+    if (!response?.cohorts) return STATIC_COHORT_DATA
 
-    return response.cohorts.map((cohort) => {
-        // Use the first week (relative_week 0) for the 7-day activation metric
-        const week0 = cohort.weeks.find((w) => w.relative_week === 0)
-
-        const activationRate = week0?.percentage ?? null
-        const activatedUsers = week0?.active_users ?? null
-
-        return {
-            cohort_week: cohort.cohort_week,
-            cohort_label: cohort.cohort_label,
-            total_users: cohort.total_users || null,
-            activated_users: activatedUsers,
-            activation_rate: activationRate,
-            pmf_reached:
-                activationRate !== null ? activationRate >= (response.pmf_target || 75) : null,
-        }
-    })
+    return response.cohorts.map((cohort) => ({
+        cohort_week: cohort.cohort_week,
+        cohort_label: cohort.cohort_label,
+        total_users: cohort.total_users,
+        weeks: cohort.weeks.map((week) => ({
+            relative_week: week.relative_week,
+            activation_rate: week.percentage,
+            activated_users: week.active_users,
+        })),
+    }))
 }
 
 export default function PmfDashboard() {
     const { user, isLoading: authLoading } = useAuth()
     const { get } = useApi()
-    const [cohortData, setCohortData] = useState<CohortData[]>([])
-    const [pmfScore, setPmfScore] = useState<PmfScoreData | null>(null)
+    const [cohortData, setCohortData] = useState<CohortData[]>(STATIC_COHORT_DATA)
+    const [pmfScore, setPmfScore] = useState<PmfScoreData>(STATIC_PMF_SCORE)
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
 
     const fetchData = async () => {
         setRefreshing(true)
-        const [cohortsRes, scoreRes] = await Promise.all([
-            get('/api/pmf/cohorts?weeks=12'),
-            get('/api/pmf/score'),
-        ])
-
-        if (cohortsRes.data) {
-            setCohortData(transformCohorts(cohortsRes.data))
+        try {
+            const response = await get('/api/pmf/cohorts')
+            if (response?.data) {
+                setCohortData(transformCohorts(response.data))
+            }
+        } catch (error) {
+            console.error('Failed to fetch PMF data:', error)
+        } finally {
+            setRefreshing(false)
+            setIsLoading(false)
         }
-        if (scoreRes.data) {
-            setPmfScore(scoreRes.data)
-        }
-
-        setIsLoading(false)
-        setRefreshing(false)
     }
 
     useEffect(() => {
@@ -118,8 +210,11 @@ export default function PmfDashboard() {
         )
     }
 
-    const pmfTarget = pmfScore?.pmf_target ?? 75
-    const score = pmfScore?.score ?? null
+    const pmfTarget = pmfScore.pmf_target ?? 75
+    const latestCohort = cohortData[cohortData.length - 1]
+    const latestWeek0 = latestCohort?.weeks.find((w) => w.relative_week === 0)
+    const score = latestWeek0?.activation_rate ?? null
+    const targetMet = score !== null ? score >= pmfTarget : null
 
     return (
         <main className="min-h-screen bg-gray-100">
@@ -202,9 +297,9 @@ export default function PmfDashboard() {
                                     Objectif
                                 </p>
                                 <p className="text-xl font-bold text-gray-900 mt-1">
-                                    {pmfScore?.target_met === true
+                                    {targetMet === true
                                         ? '✅ Atteint'
-                                        : pmfScore?.target_met === false
+                                        : targetMet === false
                                             ? '🔴 Non atteint'
                                             : '—'}
                                 </p>
@@ -226,7 +321,7 @@ export default function PmfDashboard() {
                                     Utilisateurs (dernière cohorte)
                                 </p>
                                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                                    {pmfScore?.total_users ?? '—'}
+                                    {latestCohort?.total_users ?? '—'}
                                 </p>
                             </div>
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600">
@@ -234,7 +329,7 @@ export default function PmfDashboard() {
                             </div>
                         </div>
                         <p className="text-xs text-gray-400 mt-3">
-                            Cohorte : {pmfScore?.latest_cohort ?? '—'}
+                            Cohorte : {latestCohort?.cohort_label ?? '—'}
                         </p>
                     </div>
 
@@ -246,7 +341,7 @@ export default function PmfDashboard() {
                                     Activés (audio 7j)
                                 </p>
                                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                                    {pmfScore?.users_with_audio_7d ?? '—'}
+                                    {latestWeek0?.activated_users ?? '—'}
                                 </p>
                             </div>
                             <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 text-purple-600">
@@ -274,8 +369,8 @@ export default function PmfDashboard() {
                         </p>
                     </div>
                     <CohortTable data={cohortData} />
-                </motion.div>
-            </div>
-        </main>
+            </motion.div>
+        </div>
+    </main>
     )
 }
