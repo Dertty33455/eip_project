@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\UserActivityController;
 
 // Placeholder login route to prevent RouteNotFoundException for API
 Route::get('/login', function () {
@@ -107,6 +108,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('analytics', AnalyticsController::class);
 
     // manage related audiobooks (protected)
+
+    // user activity tracking
+    Route::get('my-activities', [UserActivityController::class, 'index']);
+    Route::get('my-activities/stats', [UserActivityController::class, 'stats']);
 
     // audiobooks related management (protected)
     Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);

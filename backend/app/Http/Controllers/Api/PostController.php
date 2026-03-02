@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Like;
 use App\Models\Comment;
 use App\Models\Share;
+use App\Services\ActivityTracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,6 +59,14 @@ class PostController extends CrudController
         $post = Post::create($data);
         $post->load($this->withRelations());
 
+        ActivityTracker::track(
+            userId: $user->id,
+            action: 'post.created',
+            targetType: 'post',
+            targetId: $post->id,
+            request: $request
+        );
+
         return response()->json(['post' => $post], 201);
     }
 
@@ -99,6 +108,14 @@ class PostController extends CrudController
             'post_id' => $id,
         ]);
 
+        ActivityTracker::track(
+            userId: $user->id,
+            action: 'post.liked',
+            targetType: 'post',
+            targetId: (int) $id,
+            request: $request
+        );
+
         $likesCount = $post->likes()->count();
         return response()->json([
             'message' => 'Post liked',
@@ -136,6 +153,15 @@ class PostController extends CrudController
 
         $comment->load('author:id,firstName,lastName,username,avatar');
 
+        ActivityTracker::track(
+            userId: $user->id,
+            action: 'post.commented',
+            targetType: 'post',
+            targetId: (int) $id,
+            metadata: ['comment_id' => $comment->id],
+            request: $request
+        );
+
         return response()->json([
             'message' => 'Comment created',
             'comment' => $comment,
@@ -167,6 +193,15 @@ class PostController extends CrudController
             'post_id' => $id,
             'platform' => $validated['platform'] ?? null,
         ]);
+
+        ActivityTracker::track(
+            userId: $user->id,
+            action: 'post.shared',
+            targetType: 'post',
+            targetId: (int) $id,
+            metadata: ['share_id' => $share->id, 'platform' => $share->platform],
+            request: $request
+        );
 
         return response()->json([
             'message' => 'Post shared',
