@@ -56,7 +56,7 @@ const STATIC_COHORT_DATA: CohortData[] = [
     {
         cohort_week: '2026-01-13',
         cohort_label: 'Jan 13 - 19',
-        total_users: 0,
+        total_users: 2,
         weeks: [
             { relative_week: 0, activation_rate: 0, activated_users: 0 },
             { relative_week: 1, activation_rate: 0, activated_users: 0 },
@@ -135,7 +135,7 @@ const STATIC_COHORT_DATA: CohortData[] = [
 const STATIC_PMF_SCORE: PmfScoreData = {
     pmf_target: 75,
     latest_cohort: '2026-02-24',
-    total_users: 0,
+    total_users: 2,
     users_with_audio_7d: 0,
     score: 0,
     target_met: false,
