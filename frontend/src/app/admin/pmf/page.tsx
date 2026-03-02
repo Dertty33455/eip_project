@@ -1,0 +1,281 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import {
+    FiTarget,
+    FiTrendingUp,
+    FiUsers,
+    FiHeadphones,
+    FiArrowLeft,
+    FiRefreshCw,
+} from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
+import { useApi } from '@/hooks/useApi'
+import CohortTable, { type CohortData } from '@/components/ui/CohortTable'
+
+interface PmfScoreData {
+    pmf_target: number
+    latest_cohort: string | null
+    total_users: number
+    users_with_audio_7d: number | null
+    score: number | null
+    target_met: boolean | null
+}
+
+interface CohortsResponse {
+    pmf_target: number
+    cohorts: Array<{
+        cohort_week: string
+        cohort_label: string
+        total_users: number
+        weeks: Array<{
+            relative_week: number
+            active_users: number | null
+            total_users: number
+            percentage: number | null
+        }>
+    }>
+}
+
+function transformCohorts(response: CohortsResponse | null): CohortData[] {
+    if (!response?.cohorts) return []
+
+    return response.cohorts.map((cohort) => {
+        // Use the first week (relative_week 0) for the 7-day activation metric
+        const week0 = cohort.weeks.find((w) => w.relative_week === 0)
+
+        const activationRate = week0?.percentage ?? null
+        const activatedUsers = week0?.active_users ?? null
+
+        return {
+            cohort_week: cohort.cohort_week,
+            cohort_label: cohort.cohort_label,
+            total_users: cohort.total_users || null,
+            activated_users: activatedUsers,
+            activation_rate: activationRate,
+            pmf_reached:
+                activationRate !== null ? activationRate >= (response.pmf_target || 75) : null,
+        }
+    })
+}
+
+export default function PmfDashboard() {
+    const { user, isLoading: authLoading } = useAuth()
+    const { get } = useApi()
+    const [cohortData, setCohortData] = useState<CohortData[]>([])
+    const [pmfScore, setPmfScore] = useState<PmfScoreData | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
+
+    const fetchData = async () => {
+        setRefreshing(true)
+        const [cohortsRes, scoreRes] = await Promise.all([
+            get('/api/pmf/cohorts?weeks=12'),
+            get('/api/pmf/score'),
+        ])
+
+        if (cohortsRes.data) {
+            setCohortData(transformCohorts(cohortsRes.data))
+        }
+        if (scoreRes.data) {
+            setPmfScore(scoreRes.data)
+        }
+
+        setIsLoading(false)
+        setRefreshing(false)
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+    // Loading state
+    if (authLoading || isLoading) {
+        return (
+            <main className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
+                    <p className="text-sm text-gray-500">Chargement des cohortes…</p>
+                </div>
+            </main>
+        )
+    }
+
+    // Auth guard
+    if (!user || user.role !== 'ADMIN') {
+        return (
+            <main className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès refusé</h2>
+                    <p className="text-gray-600 mb-4">Permissions insuffisantes</p>
+                    <Link href="/" className="btn-primary">
+                        Retour
+                    </Link>
+                </div>
+            </main>
+        )
+    }
+
+    const pmfTarget = pmfScore?.pmf_target ?? 75
+    const score = pmfScore?.score ?? null
+
+    return (
+        <main className="min-h-screen bg-gray-100">
+            {/* Header */}
+            <div className="bg-white border-b">
+                <div className="container mx-auto px-4 py-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link
+                                href="/admin"
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                                <FiArrowLeft className="w-5 h-5 text-gray-600" />
+                            </Link>
+                            <div>
+                                <h1 className="text-2xl font-display font-bold text-gray-900">
+                                    Product-Market Fit
+                                </h1>
+                                <p className="text-gray-600 text-sm">
+                                    Cohortes hebdomadaires · Activation audio à 7 jours
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={fetchData}
+                            disabled={refreshing}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50"
+                        >
+                            <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            Rafraîchir
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 py-8 space-y-8">
+                {/* KPI Cards */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+                >
+                    {/* PMF Score */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                    Score PMF
+                                </p>
+                                <p className="text-3xl font-bold text-gray-900 mt-1">
+                                    {score !== null ? `${score.toFixed(1)}%` : '—'}
+                                </p>
+                            </div>
+                            <div
+                                className={`w-10 h-10 rounded-lg flex items-center justify-center ${score !== null && score >= pmfTarget
+                                        ? 'bg-emerald-100 text-emerald-600'
+                                        : 'bg-gray-100 text-gray-500'
+                                    }`}
+                            >
+                                <FiTarget className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-700 ${score !== null && score >= pmfTarget ? 'bg-emerald-500' : 'bg-primary-500'
+                                        }`}
+                                    style={{ width: score !== null ? `${Math.min(score, 100)}%` : '0%' }}
+                                />
+                            </div>
+                            <span className="text-xs text-gray-400 flex-shrink-0">{pmfTarget}%</span>
+                        </div>
+                    </div>
+
+                    {/* Target Status */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                    Objectif
+                                </p>
+                                <p className="text-xl font-bold text-gray-900 mt-1">
+                                    {pmfScore?.target_met === true
+                                        ? '✅ Atteint'
+                                        : pmfScore?.target_met === false
+                                            ? '🔴 Non atteint'
+                                            : '—'}
+                                </p>
+                            </div>
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary-100 text-primary-600">
+                                <FiTrendingUp className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">
+                            Seuil : {pmfTarget}% d'activation à 7j
+                        </p>
+                    </div>
+
+                    {/* Total Users (latest cohort) */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                    Utilisateurs (dernière cohorte)
+                                </p>
+                                <p className="text-3xl font-bold text-gray-900 mt-1">
+                                    {pmfScore?.total_users ?? '—'}
+                                </p>
+                            </div>
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600">
+                                <FiUsers className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">
+                            Cohorte : {pmfScore?.latest_cohort ?? '—'}
+                        </p>
+                    </div>
+
+                    {/* Activated Users */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                    Activés (audio 7j)
+                                </p>
+                                <p className="text-3xl font-bold text-gray-900 mt-1">
+                                    {pmfScore?.users_with_audio_7d ?? '—'}
+                                </p>
+                            </div>
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 text-purple-600">
+                                <FiHeadphones className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">
+                            ≥1 audio dans les 7 premiers jours
+                        </p>
+                    </div>
+                </motion.div>
+
+                {/* Cohort Table */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Tableau de cohortes
+                        </h2>
+                        <p className="text-xs text-gray-400">
+                            {cohortData.length} cohorte{cohortData.length !== 1 ? 's' : ''}
+                        </p>
+                    </div>
+                    <CohortTable data={cohortData} />
+                </motion.div>
+            </div>
+        </main>
+    )
+}

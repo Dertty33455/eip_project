@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { 
-  FiUsers, 
-  FiBook, 
-  FiHeadphones, 
+import {
+  FiUsers,
+  FiBook,
+  FiHeadphones,
   FiDollarSign,
   FiTrendingUp,
   FiTrendingDown,
@@ -27,13 +27,13 @@ const fadeInUp = {
 }
 
 // Stat Card Component
-function StatCard({ 
-  title, 
-  value, 
-  change, 
-  icon: Icon, 
-  color 
-}: { 
+function StatCard({
+  title,
+  value,
+  change,
+  icon: Icon,
+  color
+}: {
   title: string
   value: string | number
   change?: number
@@ -41,7 +41,7 @@ function StatCard({
   color: string
 }) {
   const isPositive = (change || 0) >= 0
-  
+
   return (
     <motion.div variants={fadeInUp} className="card">
       <div className="flex items-start justify-between">
@@ -72,7 +72,7 @@ function RecentOrders({ orders }: { orders: any[] }) {
     DELIVERED: 'bg-green-100 text-green-700',
     CANCELLED: 'bg-red-100 text-red-700',
   }
-  
+
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
@@ -81,7 +81,7 @@ function RecentOrders({ orders }: { orders: any[] }) {
           Voir tout
         </Link>
       </div>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -135,7 +135,7 @@ function PendingReports({ reports }: { reports: any[] }) {
     COPYRIGHT: 'Droit d\'auteur',
     OTHER: 'Autre',
   }
-  
+
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
@@ -147,7 +147,7 @@ function PendingReports({ reports }: { reports: any[] }) {
           Voir tout
         </Link>
       </div>
-      
+
       <div className="space-y-4">
         {reports.length === 0 ? (
           <p className="text-gray-500 text-center py-4">Aucun signalement en attente</p>
@@ -162,7 +162,7 @@ function PendingReports({ reports }: { reports: any[] }) {
                   {report.reason}
                 </p>
               </div>
-              <Link 
+              <Link
                 href={`/admin/reports/${report.id}`}
                 className="text-sm text-primary hover:underline"
               >
@@ -186,7 +186,7 @@ function NewUsers({ users }: { users: any[] }) {
           Voir tout
         </Link>
       </div>
-      
+
       <div className="space-y-4">
         {users.map((user) => (
           <div key={user.id} className="flex items-center justify-between">
@@ -201,9 +201,8 @@ function NewUsers({ users }: { users: any[] }) {
                 <p className="text-xs text-gray-500">@{user.username}</p>
               </div>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${
-              user.role === 'SELLER' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-            }`}>
+            <span className={`text-xs px-2 py-1 rounded-full ${user.role === 'SELLER' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+              }`}>
               {user.role === 'SELLER' ? 'Vendeur' : 'Utilisateur'}
             </span>
           </div>
@@ -223,7 +222,7 @@ function TopBooks({ books }: { books: any[] }) {
           Voir tout
         </Link>
       </div>
-      
+
       <div className="space-y-4">
         {books.map((book, index) => (
           <div key={book.id} className="flex items-center gap-4">
@@ -258,23 +257,23 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([])
   const [reports, setReports] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
-  
+
   useEffect(() => {
     fetchAdminData()
   }, [])
-  
+
   const fetchAdminData = async () => {
     const [statsRes, usersRes, reportsRes] = await Promise.all([
       get('/api/admin/stats'),
       get('/api/admin/users?limit=5'),
       get('/api/admin/reports?status=PENDING&limit=5'),
     ])
-    
+
     if (statsRes.data) setStats(statsRes.data)
     if (usersRes.data?.users) setUsers(usersRes.data.users)
     if (reportsRes.data?.reports) setReports(reportsRes.data.reports)
   }
-  
+
   // Demo data
   const demoStats = {
     totalUsers: 52340,
@@ -288,7 +287,7 @@ export default function AdminDashboard() {
     pendingOrders: 156,
     totalReports: 23,
   }
-  
+
   const demoOrders = [
     { id: '1', orderNumber: 'ORD001', buyer: { firstName: 'Aminata', lastName: 'Diallo' }, total: 15000, status: 'PENDING' },
     { id: '2', orderNumber: 'ORD002', buyer: { firstName: 'Kofi', lastName: 'Mensah' }, total: 8500, status: 'CONFIRMED' },
@@ -296,18 +295,18 @@ export default function AdminDashboard() {
     { id: '4', orderNumber: 'ORD004', buyer: { firstName: 'Jean', lastName: 'Kouassi' }, total: 6500, status: 'DELIVERED' },
     { id: '5', orderNumber: 'ORD005', buyer: { firstName: 'Marie', lastName: 'Traoré' }, total: 9800, status: 'PENDING' },
   ]
-  
+
   const demoUsers = [
     { id: '1', firstName: 'Aminata', lastName: 'Diallo', username: 'aminata_lit', role: 'USER' },
     { id: '2', firstName: 'Kofi', lastName: 'Mensah', username: 'kofi_books', role: 'SELLER' },
     { id: '3', firstName: 'Fatou', lastName: 'Ndiaye', username: 'fatou_reads', role: 'USER' },
   ]
-  
+
   const demoReports = [
     { id: '1', type: 'INAPPROPRIATE', reason: 'Contenu offensant dans la description' },
     { id: '2', type: 'SPAM', reason: 'Publication promotionnelle répétitive' },
   ]
-  
+
   const demoTopBooks = [
     { id: '1', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', sales: 234, revenue: 1989000 },
     { id: '2', title: 'Une Si Longue Lettre', author: 'Mariama Bâ', sales: 198, revenue: 1287000 },
@@ -315,12 +314,12 @@ export default function AdminDashboard() {
     { id: '4', title: 'Tout s\'effondre', author: 'Chinua Achebe', sales: 143, revenue: 1287000 },
     { id: '5', title: 'L\'Aventure Ambiguë', author: 'Cheikh Hamidou Kane', sales: 121, revenue: 992200 },
   ]
-  
+
   const displayStats = stats || demoStats
   const displayOrders = orders.length > 0 ? orders : demoOrders
   const displayUsers = users.length > 0 ? users : demoUsers
   const displayReports = reports.length > 0 ? reports : demoReports
-  
+
   // Check admin access
   if (authLoading) {
     return (
@@ -329,7 +328,7 @@ export default function AdminDashboard() {
       </main>
     )
   }
-  
+
   if (!user || user.role !== 'ADMIN') {
     return (
       <main className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -342,7 +341,7 @@ export default function AdminDashboard() {
       </main>
     )
   }
-  
+
   return (
     <main className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -358,7 +357,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <Link 
+              <Link
                 href="/admin/analytics"
                 className="btn-secondary flex items-center gap-2"
               >
@@ -369,7 +368,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Stats Grid */}
         <motion.div
@@ -408,7 +407,7 @@ export default function AdminDashboard() {
             color="bg-primary/10 text-primary"
           />
         </motion.div>
-        
+
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-6 mb-8">
           <div className="card flex items-center gap-4">
@@ -439,7 +438,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-        
+
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column */}
@@ -447,14 +446,14 @@ export default function AdminDashboard() {
             <RecentOrders orders={displayOrders} />
             <TopBooks books={demoTopBooks} />
           </div>
-          
+
           {/* Right Column */}
           <div className="space-y-8">
             <PendingReports reports={displayReports} />
             <NewUsers users={displayUsers} />
           </div>
         </div>
-        
+
         {/* Admin Navigation */}
         <div className="mt-8">
           <h3 className="font-semibold text-gray-900 mb-4">Gestion</h3>
@@ -464,6 +463,7 @@ export default function AdminDashboard() {
               { href: '/admin/books', icon: FiBook, label: 'Livres', color: 'bg-green-100 text-green-600' },
               { href: '/admin/orders', icon: FiShoppingCart, label: 'Commandes', color: 'bg-purple-100 text-purple-600' },
               { href: '/admin/reports', icon: FiAlertCircle, label: 'Signalements', color: 'bg-red-100 text-red-600' },
+              { href: '/admin/pmf', icon: FiBarChart2, label: 'PMF Analytics', color: 'bg-primary/10 text-primary' },
             ].map((item) => (
               <Link
                 key={item.href}
