@@ -58,10 +58,10 @@ export function Footer() {
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
+                <span className="text-white font-bold text-xl">B</span>
               </div>
               <span className="font-display font-bold text-xl text-white">
-                Afri<span className="text-primary-400">Book</span>
+                Book<span className="text-primary-400">Shell</span>
               </span>
             </Link>
             <p className="text-cream-300 mb-6 max-w-sm">

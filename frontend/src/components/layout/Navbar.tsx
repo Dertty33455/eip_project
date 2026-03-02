@@ -69,13 +69,13 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" prefetch={true} className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">A</span>
+              <span className="text-white font-bold text-xl">B</span>
             </div>
             <span className={cn(
               'font-display font-bold text-xl transition-colors',
               isScrolled ? 'text-earth-800' : 'text-earth-800'
             )}>
-              Afri<span className="text-primary-500">Book</span>
+              Book<span className="text-primary-500">Shell</span>
             </span>
           </Link>
 

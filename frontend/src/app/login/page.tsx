@@ -80,8 +80,8 @@ export default function LoginPage() {
           <div className="text-center mb-6 sm:mb-8">
             <Link href="/" className="inline-block mb-4 sm:mb-6">
               <span className="text-2xl sm:text-3xl font-display font-bold">
-                <span className="text-primary">Afri</span>
-                <span className="text-secondary">Book</span>
+                <span className="text-primary">Book</span>
+                <span className="text-secondary">Shell</span>
               </span>
             </Link>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 mb-2">
