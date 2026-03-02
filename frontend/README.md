@@ -2,6 +2,10 @@
 
 Plateforme africaine communautaire de livres & livres audio avec marketplace et wallet mobile money.
 
+## 🚀 Getting started
+
+To run the frontend locally you need Node.js 20+ and a configured database (PostgreSQL is used by default). Follow the **Installation** section below for detailed steps.
+
 ## 🚀 Fonctionnalités
 
 ### 📚 Marketplace de Livres
@@ -85,13 +89,6 @@ MOOV_API_URL=https://api.moov-africa.com
 MOOV_API_KEY=your-moov-api-key
 MOOV_MERCHANT_ID=your-merchant-id
 MOOV_CALLBACK_URL=https://your-domain.com/api/webhooks/moov
-```
-
-4. Initialiser la base de données
-```bash
-npx prisma generate
-npx prisma db push
-npx prisma db seed
 ```
 
 5. Lancer le serveur de développement

@@ -4,13 +4,40 @@ This folder contains a _stand-alone_ Laravel 12 application that can serve as th
 service for the BookShell front-end. It exposes a simple REST API and uses
 Eloquent models to mirror the Prisma schema used by the Next.js version.
 
+## 🧱 Prerequisites
+
+Before you begin, make sure the following tools are available on your
+development machine. Install them if they are not already present.
+
+- **PHP 8.3+** with the usual extensions (`pdo`, `mbstring`, `openssl`,
+  `curl`, etc.). On Debian/Ubuntu:
+  ```bash
+  sudo apt update && sudo apt install php-cli php-xml php-mbstring php-sqlite3
+  ```
+  On macOS with Homebrew:
+  ```bash
+  brew install php
+  ```
+  For other platforms, see the
+  [official PHP installation guide](https://www.php.net/manual/en/install.php).
+
+- **Composer** (the PHP dependency manager). You can install it globally by
+  running:
+  ```bash
+  php -r "copy('https://getcomposer.org/installer','composer-setup.php');"
+  php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  rm composer-setup.php
+  ```
+  or follow the instructions at https://getcomposer.org/download/.
+
+> Having these tools ensures you can run `composer install`, migrate the
+> database, and start the built-in web server.
+
 ## 🚀 Getting started
 
 1. **Install dependencies**
    ```bash
-   cd backend          # workspace root already inside backend when running this README
    composer install
-   npm install        # not strictly required for API-only work
    ```
 
 2. **Copy environment file**
