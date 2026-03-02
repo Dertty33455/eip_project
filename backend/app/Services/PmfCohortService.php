@@ -159,7 +159,7 @@ class PmfCohortService
         $usersWithAudio = DB::table('users as u')
             ->join('user_activities as ua', function ($join) {
                 $join->on('ua.user_id', '=', 'u.id')
-                     ->where('ua.action', '=', 'audio.played');
+                     ->where('ua.action', 'audio.played');
             })
             ->where('u.created_at', '>=', $latestCohortStart)
             ->where('u.created_at', '<=', $cohortEndDate->endOfDay())
@@ -211,7 +211,7 @@ class PmfCohortService
         $rows = DB::table('users as u')
             ->join('user_activities as ua', function ($join) {
                 $join->on('ua.user_id', '=', 'u.id')
-                     ->where('ua.action', '=', 'audio.played');
+                     ->where('ua.action', 'audio.played');
             })
             ->selectRaw("{$cohortWeekExpr} as cohort_week")
             ->selectRaw("{$relativeWeekExpr} as relative_week")

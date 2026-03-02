@@ -12,7 +12,7 @@ import {
     FiRefreshCw,
 } from 'react-icons/fi'
 import { useAuth } from '@/hooks/useAuth'
-import { useApi } from '@/hooks/useApi'
+import { usePmf } from '@/hooks/useApi'
 import CohortTable, { type CohortData } from '@/components/ui/CohortTable'
 
 interface PmfScoreData {
@@ -52,97 +52,8 @@ interface CohortsResponse {
     }>
 }
 
-const STATIC_COHORT_DATA: CohortData[] = [
-    {
-        cohort_week: '2026-01-13',
-        cohort_label: 'Jan 13 - 19',
-        total_users: 2,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-            { relative_week: 2, activation_rate: 0, activated_users: 0 },
-            { relative_week: 3, activation_rate: 0, activated_users: 0 },
-            { relative_week: 4, activation_rate: 0, activated_users: 0 },
-            { relative_week: 5, activation_rate: 0, activated_users: 0 },
-            { relative_week: 6, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-01-20',
-        cohort_label: 'Jan 20 - 26',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-            { relative_week: 2, activation_rate: 0, activated_users: 0 },
-            { relative_week: 3, activation_rate: 0, activated_users: 0 },
-            { relative_week: 4, activation_rate: 0, activated_users: 0 },
-            { relative_week: 5, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-01-27',
-        cohort_label: 'Jan 27 - Feb 2',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-            { relative_week: 2, activation_rate: 0, activated_users: 0 },
-            { relative_week: 3, activation_rate: 0, activated_users: 0 },
-            { relative_week: 4, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-02-03',
-        cohort_label: 'Feb 3 - 9',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-            { relative_week: 2, activation_rate: 0, activated_users: 0 },
-            { relative_week: 3, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-02-10',
-        cohort_label: 'Feb 10 - 16',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-            { relative_week: 2, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-02-17',
-        cohort_label: 'Feb 17 - 23',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-            { relative_week: 1, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-    {
-        cohort_week: '2026-02-24',
-        cohort_label: 'Feb 24 - Mar 2',
-        total_users: 0,
-        weeks: [
-            { relative_week: 0, activation_rate: 0, activated_users: 0 },
-        ],
-    },
-]
-
-const STATIC_PMF_SCORE: PmfScoreData = {
-    pmf_target: 75,
-    latest_cohort: '2026-02-24',
-    total_users: 2,
-    users_with_audio_7d: 0,
-    score: 0,
-    target_met: false,
-}
-
 function transformCohorts(response: CohortsResponse | null): CohortData[] {
-    if (!response?.cohorts) return STATIC_COHORT_DATA
+    if (!response?.cohorts) return []
 
     return response.cohorts.map((cohort) => ({
         cohort_week: cohort.cohort_week,
@@ -158,18 +69,25 @@ function transformCohorts(response: CohortsResponse | null): CohortData[] {
 
 export default function PmfDashboard() {
     const { user, isLoading: authLoading } = useAuth()
-    const { get } = useApi()
-    const [cohortData, setCohortData] = useState<CohortData[]>(STATIC_COHORT_DATA)
-    const [pmfScore, setPmfScore] = useState<PmfScoreData>(STATIC_PMF_SCORE)
+    const { getCohorts, getScore } = usePmf()
+    const [cohortData, setCohortData] = useState<CohortData[]>([])
+    const [pmfScore, setPmfScore] = useState<PmfScoreData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
 
     const fetchData = async () => {
         setRefreshing(true)
         try {
-            const response = await get('/api/pmf/cohorts')
-            if (response?.data) {
-                setCohortData(transformCohorts(response.data))
+            const [cohortsRes, scoreRes] = await Promise.all([
+                getCohorts(12),
+                getScore()
+            ])
+
+            if (cohortsRes?.data) {
+                setCohortData(transformCohorts(cohortsRes.data))
+            }
+            if (scoreRes?.data) {
+                setPmfScore(scoreRes.data)
             }
         } catch (error) {
             console.error('Failed to fetch PMF data:', error)
@@ -210,11 +128,11 @@ export default function PmfDashboard() {
         )
     }
 
-    const pmfTarget = pmfScore.pmf_target ?? 75
+    const pmfTarget = pmfScore?.pmf_target ?? 75
+    const score = pmfScore?.score ?? null
+    const targetMet = pmfScore?.target_met ?? null
     const latestCohort = cohortData[cohortData.length - 1]
     const latestWeek0 = latestCohort?.weeks.find((w) => w.relative_week === 0)
-    const score = latestWeek0?.activation_rate ?? null
-    const targetMet = score !== null ? score >= pmfTarget : null
 
     return (
         <main className="min-h-screen bg-gray-100">
@@ -270,8 +188,8 @@ export default function PmfDashboard() {
                             </div>
                             <div
                                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${score !== null && score >= pmfTarget
-                                        ? 'bg-emerald-100 text-emerald-600'
-                                        : 'bg-gray-100 text-gray-500'
+                                    ? 'bg-emerald-100 text-emerald-600'
+                                    : 'bg-gray-100 text-gray-500'
                                     }`}
                             >
                                 <FiTarget className="w-5 h-5" />
@@ -369,8 +287,8 @@ export default function PmfDashboard() {
                         </p>
                     </div>
                     <CohortTable data={cohortData} />
-            </motion.div>
-        </div>
-    </main>
+                </motion.div>
+            </div>
+        </main>
     )
 }
