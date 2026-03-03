@@ -251,234 +251,146 @@ function TopBooks({ books }: { books: any[] }) {
 }
 
 export default function AdminDashboard() {
-  const { user, isLoading: authLoading } = useAuth()
-  const { get, isLoading } = useApi()
+  const { user } = useAuth()
+  const { get } = useApi()
   const [stats, setStats] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
   const [reports, setReports] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
+  const [topBooks, setTopBooks] = useState<any[]>([])
 
   useEffect(() => {
     fetchAdminData()
   }, [])
 
   const fetchAdminData = async () => {
-    const [statsRes, usersRes, reportsRes] = await Promise.all([
+    const [statsRes, usersRes, reportsRes, ordersRes, topBooksRes] = await Promise.all([
       get('/api/admin/stats'),
       get('/api/admin/users?limit=5'),
       get('/api/admin/reports?status=PENDING&limit=5'),
+      get('/api/admin/orders/recent?limit=5'),
+      get('/api/admin/top-books'),
     ])
 
     if (statsRes.data) setStats(statsRes.data)
-    if (usersRes.data?.users) setUsers(usersRes.data.users)
-    if (reportsRes.data?.reports) setReports(reportsRes.data.reports)
+    if (usersRes.data?.data) setUsers(usersRes.data.data)
+    if (reportsRes.data?.data) setReports(reportsRes.data.data)
+    if (ordersRes.data?.data) setOrders(ordersRes.data.data)
+    if (topBooksRes.data) setTopBooks(topBooksRes.data)
   }
 
-  // Demo data
-  const demoStats = {
-    totalUsers: 52340,
-    totalBooks: 12456,
-    totalAudiobooks: 543,
-    totalRevenue: 45678900,
-    userGrowth: 12.5,
-    bookGrowth: 8.3,
-    revenueGrowth: 23.1,
-    totalOrders: 8923,
-    pendingOrders: 156,
-    totalReports: 23,
+  const displayStats = stats || {
+    totalUsers: 0,
+    totalBooks: 0,
+    totalAudiobooks: 0,
+    totalRevenue: 0,
+    userGrowth: 0,
+    bookGrowth: 0,
+    revenueGrowth: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalReports: 0,
   }
-
-  const demoOrders = [
-    { id: '1', orderNumber: 'ORD001', buyer: { firstName: 'Aminata', lastName: 'Diallo' }, total: 15000, status: 'PENDING' },
-    { id: '2', orderNumber: 'ORD002', buyer: { firstName: 'Kofi', lastName: 'Mensah' }, total: 8500, status: 'CONFIRMED' },
-    { id: '3', orderNumber: 'ORD003', buyer: { firstName: 'Fatou', lastName: 'Ndiaye' }, total: 22000, status: 'SHIPPED' },
-    { id: '4', orderNumber: 'ORD004', buyer: { firstName: 'Jean', lastName: 'Kouassi' }, total: 6500, status: 'DELIVERED' },
-    { id: '5', orderNumber: 'ORD005', buyer: { firstName: 'Marie', lastName: 'Traoré' }, total: 9800, status: 'PENDING' },
-  ]
-
-  const demoUsers = [
-    { id: '1', firstName: 'Aminata', lastName: 'Diallo', username: 'aminata_lit', role: 'USER' },
-    { id: '2', firstName: 'Kofi', lastName: 'Mensah', username: 'kofi_books', role: 'SELLER' },
-    { id: '3', firstName: 'Fatou', lastName: 'Ndiaye', username: 'fatou_reads', role: 'USER' },
-  ]
-
-  const demoReports = [
-    { id: '1', type: 'INAPPROPRIATE', reason: 'Contenu offensant dans la description' },
-    { id: '2', type: 'SPAM', reason: 'Publication promotionnelle répétitive' },
-  ]
-
-  const demoTopBooks = [
-    { id: '1', title: 'Les Soleils des Indépendances', author: 'Ahmadou Kourouma', sales: 234, revenue: 1989000 },
-    { id: '2', title: 'Une Si Longue Lettre', author: 'Mariama Bâ', sales: 198, revenue: 1287000 },
-    { id: '3', title: 'L\'Enfant Noir', author: 'Camara Laye', sales: 156, revenue: 1092000 },
-    { id: '4', title: 'Tout s\'effondre', author: 'Chinua Achebe', sales: 143, revenue: 1287000 },
-    { id: '5', title: 'L\'Aventure Ambiguë', author: 'Cheikh Hamidou Kane', sales: 121, revenue: 992200 },
-  ]
-
-  const displayStats = stats || demoStats
-  const displayOrders = orders.length > 0 ? orders : demoOrders
-  const displayUsers = users.length > 0 ? users : demoUsers
-  const displayReports = reports.length > 0 ? reports : demoReports
-
-  // Check admin access
-  if (authLoading) {
-    return (
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </main>
-    )
-  }
-
-  if (!user || user.role !== 'ADMIN') {
-    return (
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <FiAlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès refusé</h2>
-          <p className="text-gray-600 mb-4">Vous n'avez pas les permissions nécessaires</p>
-          <Link href="/" className="btn-primary">Retour à l'accueil</Link>
-        </div>
-      </main>
-    )
-  }
+  const displayOrders = orders
+  const displayUsers = users
+  const displayReports = reports
+  const displayTopBooks = topBooks
 
   return (
-    <main className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-display font-bold text-gray-900">
-                Dashboard Admin
-              </h1>
-              <p className="text-gray-600">
-                Bienvenue, {user.firstName}! Voici un aperçu de la plateforme.
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin/analytics"
-                className="btn-secondary flex items-center gap-2"
-              >
-                <FiBarChart2 className="w-5 h-5" />
-                Analytics
-              </Link>
-            </div>
+    <div className="py-8 px-4 sm:px-6 lg:px-8">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-display font-bold text-gray-900">
+          Tableau de bord
+        </h1>
+        <p className="text-gray-600">
+          Bonjour, {user?.firstName}! Voici un aperçu de l'activité.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: 0.1 } }
+        }}
+        className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      >
+        <StatCard
+          title="Utilisateurs"
+          value={displayStats.totalUsers?.toLocaleString()}
+          change={displayStats.userGrowth}
+          icon={FiUsers}
+          color="bg-blue-100 text-blue-600"
+        />
+        <StatCard
+          title="Livres"
+          value={displayStats.totalBooks?.toLocaleString()}
+          change={displayStats.bookGrowth}
+          icon={FiBook}
+          color="bg-green-100 text-green-600"
+        />
+        <StatCard
+          title="Audiobooks"
+          value={displayStats.totalAudiobooks?.toLocaleString()}
+          icon={FiHeadphones}
+          color="bg-purple-100 text-purple-600"
+        />
+        <StatCard
+          title="Revenus"
+          value={`${((displayStats.totalRevenue || 0) / 1000000).toFixed(1)}M XOF`}
+          change={displayStats.revenueGrowth}
+          icon={FiDollarSign}
+          color="bg-primary/10 text-primary"
+        />
+      </motion.div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+            <FiClock className="w-6 h-6 text-yellow-600" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">{displayStats.pendingOrders}</p>
+            <p className="text-sm text-gray-500">Commandes en attente</p>
+          </div>
+        </div>
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <FiCheckCircle className="w-6 h-6 text-green-600" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">{displayStats.totalOrders}</p>
+            <p className="text-sm text-gray-500">Total commandes</p>
+          </div>
+        </div>
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <FiAlertCircle className="w-6 h-6 text-red-600" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">{displayStats.totalReports}</p>
+            <p className="text-sm text-gray-500">Signalements</p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            visible: { transition: { staggerChildren: 0.1 } }
-          }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <StatCard
-            title="Utilisateurs"
-            value={displayStats.totalUsers?.toLocaleString()}
-            change={displayStats.userGrowth}
-            icon={FiUsers}
-            color="bg-blue-100 text-blue-600"
-          />
-          <StatCard
-            title="Livres"
-            value={displayStats.totalBooks?.toLocaleString()}
-            change={displayStats.bookGrowth}
-            icon={FiBook}
-            color="bg-green-100 text-green-600"
-          />
-          <StatCard
-            title="Audiobooks"
-            value={displayStats.totalAudiobooks?.toLocaleString()}
-            icon={FiHeadphones}
-            color="bg-purple-100 text-purple-600"
-          />
-          <StatCard
-            title="Revenus"
-            value={`${(displayStats.totalRevenue / 1000000).toFixed(1)}M XOF`}
-            change={displayStats.revenueGrowth}
-            icon={FiDollarSign}
-            color="bg-primary/10 text-primary"
-          />
-        </motion.div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-              <FiClock className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{displayStats.pendingOrders}</p>
-              <p className="text-sm text-gray-500">Commandes en attente</p>
-            </div>
-          </div>
-          <div className="card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-              <FiCheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{displayStats.totalOrders}</p>
-              <p className="text-sm text-gray-500">Total commandes</p>
-            </div>
-          </div>
-          <div className="card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <FiAlertCircle className="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{displayStats.totalReports}</p>
-              <p className="text-sm text-gray-500">Signalements</p>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-8">
+          <RecentOrders orders={displayOrders} />
+          <TopBooks books={displayTopBooks} />
         </div>
 
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <RecentOrders orders={displayOrders} />
-            <TopBooks books={demoTopBooks} />
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-8">
-            <PendingReports reports={displayReports} />
-            <NewUsers users={displayUsers} />
-          </div>
-        </div>
-
-        {/* Admin Navigation */}
-        <div className="mt-8">
-          <h3 className="font-semibold text-gray-900 mb-4">Gestion</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { href: '/admin/users', icon: FiUsers, label: 'Utilisateurs', color: 'bg-blue-100 text-blue-600' },
-              { href: '/admin/books', icon: FiBook, label: 'Livres', color: 'bg-green-100 text-green-600' },
-              { href: '/admin/orders', icon: FiShoppingCart, label: 'Commandes', color: 'bg-purple-100 text-purple-600' },
-              { href: '/admin/reports', icon: FiAlertCircle, label: 'Signalements', color: 'bg-red-100 text-red-600' },
-              { href: '/admin/pmf', icon: FiBarChart2, label: 'PMF Analytics', color: 'bg-primary/10 text-primary' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="card hover:shadow-lg transition-shadow flex items-center gap-4"
-              >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.color}`}>
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <span className="font-medium text-gray-900">{item.label}</span>
-              </Link>
-            ))}
-          </div>
+        {/* Right Column */}
+        <div className="space-y-8">
+          <PendingReports reports={displayReports} />
+          <NewUsers users={displayUsers} />
         </div>
       </div>
-    </main>
+    </div>
   )
 }

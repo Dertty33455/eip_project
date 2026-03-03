@@ -5,22 +5,24 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { 
-  FiMail, 
-  FiLock, 
-  FiEye, 
-  FiEyeOff, 
-  FiArrowRight, 
-  FiUser, 
+import {
+  FiMail,
+  FiLock,
+  FiEye,
+  FiEyeOff,
+  FiArrowRight,
+  FiUser,
   FiPhone,
-  FiCheck
+  FiCheck,
+  FiShoppingBag,
+  FiTag
 } from 'react-icons/fi'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register, isLoading } = useAuth()
-  
+
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     firstName: '',
@@ -30,33 +32,36 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    role: 'USER' as 'USER' | 'SELLER',
     acceptTerms: false,
   })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
     }))
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-  
-  const validateStep1 = () => {
+
+  const validateStep1 = () => true // Role selection is always valid
+
+  const validateStep2 = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'Prénom requis'
     }
-    
+
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Nom requis'
     }
-    
+
     if (!formData.username.trim()) {
       newErrors.username = 'Nom d\'utilisateur requis'
     } else if (formData.username.length < 3) {
@@ -64,53 +69,52 @@ export default function RegisterPage() {
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
       newErrors.username = 'Lettres, chiffres et underscore uniquement'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-  
-  const validateStep2 = () => {
+
+  const validateStep3 = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email requis'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Email invalide'
     }
-    
+
     if (formData.phone && !/^\+?[0-9]{8,15}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Numéro de téléphone invalide'
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Mot de passe requis'
     } else if (formData.password.length < 8) {
       newErrors.password = 'Au moins 8 caractères'
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Les mots de passe ne correspondent pas'
     }
-    
+
     if (!formData.acceptTerms) {
       newErrors.acceptTerms = 'Vous devez accepter les conditions'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-  
+
   const handleNext = () => {
-    if (validateStep1()) {
-      setStep(2)
-    }
+    if (step === 1) setStep(2)
+    else if (step === 2 && validateStep2()) setStep(3)
   }
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!validateStep2()) return
-    
+
+    if (!validateStep3()) return
+
     const result = await register({
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -118,8 +122,9 @@ export default function RegisterPage() {
       email: formData.email,
       phone: formData.phone || undefined,
       password: formData.password,
+      role: formData.role,
     })
-    
+
     if (result.success) {
       router.push('/')
       return
@@ -138,7 +143,7 @@ export default function RegisterPage() {
       setErrors(prev => ({ ...prev, ...newErrors }))
     }
   }
-  
+
   // Password strength indicator
   const getPasswordStrength = () => {
     const password = formData.password
@@ -150,10 +155,10 @@ export default function RegisterPage() {
     if (/[^A-Za-z0-9]/.test(password)) strength++
     return strength
   }
-  
+
   const strengthLabels = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort']
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500']
-  
+
   const handleGoogleSignup = () => {
     const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     window.location.href = `${base}/api/auth/google/redirect`
@@ -167,7 +172,7 @@ export default function RegisterPage() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e88c2a' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
       </div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -190,7 +195,7 @@ export default function RegisterPage() {
               Rejoignez la communauté des lecteurs africains
             </p>
           </div>
-          
+
           {/* Progress Steps */}
           <div className="flex items-center gap-4 mb-6 sm:mb-8">
             <div className="flex-1">
@@ -199,11 +204,72 @@ export default function RegisterPage() {
             <div className="flex-1">
               <div className={`h-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`} />
             </div>
+            <div className="flex-1">
+              <div className={`h-1 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-gray-200'}`} />
+            </div>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
-            {/* Step 1: Personal Info */}
+            {/* Step 1: Role Selection */}
             {step === 1 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="text-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Quel est votre objectif ?</h2>
+                  <p className="text-sm text-gray-500 text-balance">Choisissez comment vous souhaitez utiliser la plateforme</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, role: 'USER' }))
+                      setStep(2)
+                    }}
+                    className={`p-4 border-2 rounded-2xl text-left transition-all group ${formData.role === 'USER' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-primary/50'
+                      }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${formData.role === 'USER' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-400 group-hover:bg-primary/10 group-hover:text-primary'
+                        }`}>
+                        <FiShoppingBag className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">Acheteur</p>
+                        <p className="text-xs text-gray-500">Je souhaite lire et acheter des livres</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, role: 'SELLER' }))
+                      setStep(2)
+                    }}
+                    className={`p-4 border-2 rounded-2xl text-left transition-all group ${formData.role === 'SELLER' ? 'border-secondary bg-secondary/5' : 'border-gray-100 hover:border-secondary/50'
+                      }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${formData.role === 'SELLER' ? 'bg-secondary text-white' : 'bg-gray-50 text-gray-400 group-hover:bg-secondary/10 group-hover:text-secondary'
+                        }`}>
+                        <FiTag className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">Vendeur</p>
+                        <p className="text-xs text-gray-500">Je souhaite vendre mes livres sur la plateforme</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Personal Info */}
+            {step === 2 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -222,15 +288,14 @@ export default function RegisterPage() {
                       value={formData.firstName}
                       onChange={handleChange}
                       placeholder="Jean"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.firstName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     {errors.firstName && (
                       <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
                     )}
                   </div>
-                  
+
                   {/* Last Name */}
                   <div>
                     <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -243,16 +308,15 @@ export default function RegisterPage() {
                       value={formData.lastName}
                       onChange={handleChange}
                       placeholder="Dupont"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.lastName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     {errors.lastName && (
                       <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
                     )}
                   </div>
                 </div>
-                
+
                 {/* Username */}
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -269,9 +333,8 @@ export default function RegisterPage() {
                       value={formData.username}
                       onChange={handleChange}
                       placeholder="jean_dupont"
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.username ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.username ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                   </div>
                   {errors.username && (
@@ -281,21 +344,30 @@ export default function RegisterPage() {
                     Ce sera votre identifiant unique sur la plateforme
                   </p>
                 </div>
-                
-                {/* Next Button */}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="w-full btn-primary flex items-center justify-center gap-2 py-3"
-                >
-                  <span>Continuer</span>
-                  <FiArrowRight />
-                </button>
+
+                {/* Buttons */}
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    Retour
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-1 btn-primary flex items-center justify-center gap-2 py-3"
+                  >
+                    <span>Continuer</span>
+                    <FiArrowRight />
+                  </button>
+                </div>
               </motion.div>
             )}
-            
-            {/* Step 2: Account Info */}
-            {step === 2 && (
+
+            {/* Step 3: Account Info */}
+            {step === 3 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -317,16 +389,15 @@ export default function RegisterPage() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="email@exemple.com"
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                   </div>
                   {errors.email && (
                     <p className="mt-1 text-sm text-red-500">{errors.email}</p>
                   )}
                 </div>
-                
+
                 {/* Phone */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -343,16 +414,15 @@ export default function RegisterPage() {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+225 07 XX XX XX XX"
-                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                   </div>
                   {errors.phone && (
                     <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
                   )}
                 </div>
-                
+
                 {/* Password */}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -369,9 +439,8 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.password ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     <button
                       type="button"
@@ -388,7 +457,7 @@ export default function RegisterPage() {
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-500">{errors.password}</p>
                   )}
-                  
+
                   {/* Password Strength */}
                   {formData.password && (
                     <div className="mt-2">
@@ -396,9 +465,8 @@ export default function RegisterPage() {
                         {[...Array(5)].map((_, i) => (
                           <div
                             key={i}
-                            className={`h-1 flex-1 rounded-full ${
-                              i < getPasswordStrength() ? strengthColors[getPasswordStrength() - 1] : 'bg-gray-200'
-                            }`}
+                            className={`h-1 flex-1 rounded-full ${i < getPasswordStrength() ? strengthColors[getPasswordStrength() - 1] : 'bg-gray-200'
+                              }`}
                           />
                         ))}
                       </div>
@@ -408,7 +476,7 @@ export default function RegisterPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Confirm Password */}
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
@@ -425,9 +493,8 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
                     {formData.confirmPassword && formData.password === formData.confirmPassword && (
                       <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
@@ -439,7 +506,7 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
                   )}
                 </div>
-                
+
                 {/* Terms */}
                 <div>
                   <label className="flex items-start gap-3">
@@ -465,12 +532,12 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-500">{errors.acceptTerms}</p>
                   )}
                 </div>
-                
+
                 {/* Buttons */}
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={() => setStep(2)}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     Retour
@@ -499,17 +566,17 @@ export default function RegisterPage() {
               </motion.div>
             )}
           </form>
-          
+
           {/* Divider */}
           <div className="my-6 sm:my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-xs sm:text-sm text-gray-500">ou</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
-          
+
           {/* Social Signup */}
           <div className="space-y-3">
-            <button 
+            <button
               type="button"
               onClick={handleGoogleSignup}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
@@ -535,7 +602,7 @@ export default function RegisterPage() {
               <span className="text-gray-700">S'inscrire avec Google</span>
             </button>
           </div>
-          
+
           {/* Login Link */}
           <p className="mt-6 sm:mt-8 text-center text-sm sm:text-base text-gray-600">
             Déjà un compte?{' '}

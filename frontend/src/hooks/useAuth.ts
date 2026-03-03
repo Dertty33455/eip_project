@@ -166,6 +166,7 @@ export function useAuth() {
     lastName: string
     username: string
     phone?: string
+    role?: 'USER' | 'SELLER'
   }) => {
     try {
       setLoading(true)
@@ -236,7 +237,7 @@ export function useAuth() {
     isAuthenticated: !!user && !!token,
     setToken,
     fetchUser, // expose for manual calls if ever needed
-  
+
     login,
     register,
     logout,

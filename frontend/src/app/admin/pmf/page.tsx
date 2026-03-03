@@ -30,7 +30,7 @@ interface CohortWeek {
     activated_users: number | null
 }
 
-interface CohortData {
+interface LocalCohortData {
     cohort_week: string
     cohort_label: string
     total_users: number
@@ -52,7 +52,7 @@ interface CohortsResponse {
     }>
 }
 
-function transformCohorts(response: CohortsResponse | null): CohortData[] {
+function transformCohorts(response: CohortsResponse | null): LocalCohortData[] {
     if (!response?.cohorts) return []
 
     return response.cohorts.map((cohort) => ({
@@ -68,9 +68,9 @@ function transformCohorts(response: CohortsResponse | null): CohortData[] {
 }
 
 export default function PmfDashboard() {
-    const { user, isLoading: authLoading } = useAuth()
+    const { user } = useAuth()
     const { getCohorts, getScore } = usePmf()
-    const [cohortData, setCohortData] = useState<CohortData[]>([])
+    const [cohortData, setCohortData] = useState<LocalCohortData[]>([])
     const [pmfScore, setPmfScore] = useState<PmfScoreData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -101,74 +101,46 @@ export default function PmfDashboard() {
         fetchData()
     }, [])
 
-    // Loading state
-    if (authLoading || isLoading) {
+    if (isLoading) {
         return (
-            <main className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
                     <p className="text-sm text-gray-500">Chargement des cohortes…</p>
                 </div>
-            </main>
-        )
-    }
-
-    // Auth guard
-    if (!user || user.role !== 'ADMIN') {
-        return (
-            <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès refusé</h2>
-                    <p className="text-gray-600 mb-4">Permissions insuffisantes</p>
-                    <Link href="/" className="btn-primary">
-                        Retour
-                    </Link>
-                </div>
-            </main>
+            </div>
         )
     }
 
     const pmfTarget = pmfScore?.pmf_target ?? 75
-    const score = pmfScore?.score ?? null
-    const targetMet = pmfScore?.target_met ?? null
+    const scoreValue = pmfScore?.score ?? null
+    const targetMetStatus = pmfScore?.target_met ?? null
     const latestCohort = cohortData[cohortData.length - 1]
     const latestWeek0 = latestCohort?.weeks.find((w) => w.relative_week === 0)
 
     return (
-        <main className="min-h-screen bg-gray-100">
+        <div className="py-8 px-4 sm:px-6 lg:px-8">
             {/* Header */}
-            <div className="bg-white border-b">
-                <div className="container mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link
-                                href="/admin"
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                <FiArrowLeft className="w-5 h-5 text-gray-600" />
-                            </Link>
-                            <div>
-                                <h1 className="text-2xl font-display font-bold text-gray-900">
-                                    Product-Market Fit
-                                </h1>
-                                <p className="text-gray-600 text-sm">
-                                    Cohortes hebdomadaires · Activation audio à 7 jours
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={fetchData}
-                            disabled={refreshing}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50"
-                        >
-                            <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            Rafraîchir
-                        </button>
-                    </div>
+            <div className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-display font-bold text-gray-900">
+                        Product-Market Fit
+                    </h1>
+                    <p className="text-gray-600 text-sm">
+                        Cohortes hebdomadaires · Activation audio à 7 jours
+                    </p>
                 </div>
+                <button
+                    onClick={fetchData}
+                    disabled={refreshing}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50"
+                >
+                    <FiRefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    Rafraîchir
+                </button>
             </div>
 
-            <div className="container mx-auto px-4 py-8 space-y-8">
+            <div className="space-y-8">
                 {/* KPI Cards */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -183,24 +155,18 @@ export default function PmfDashboard() {
                                     Score PMF
                                 </p>
                                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                                    {score !== null ? `${score.toFixed(1)}%` : '—'}
+                                    {scoreValue !== null ? `${scoreValue.toFixed(1)}%` : '--'}
                                 </p>
                             </div>
-                            <div
-                                className={`w-10 h-10 rounded-lg flex items-center justify-center ${score !== null && score >= pmfTarget
-                                    ? 'bg-emerald-100 text-emerald-600'
-                                    : 'bg-gray-100 text-gray-500'
-                                    }`}
-                            >
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${scoreValue !== null && scoreValue >= pmfTarget ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                                 <FiTarget className="w-5 h-5" />
                             </div>
                         </div>
                         <div className="mt-3 flex items-center gap-2">
                             <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full rounded-full transition-all duration-700 ${score !== null && score >= pmfTarget ? 'bg-emerald-500' : 'bg-primary-500'
-                                        }`}
-                                    style={{ width: score !== null ? `${Math.min(score, 100)}%` : '0%' }}
+                                    className={`h-full rounded-full transition-all duration-700 ${scoreValue !== null && scoreValue >= pmfTarget ? 'bg-emerald-500' : 'bg-primary'}`}
+                                    style={{ width: scoreValue !== null ? `${Math.min(scoreValue, 100)}%` : '0%' }}
                                 />
                             </div>
                             <span className="text-xs text-gray-400 flex-shrink-0">{pmfTarget}%</span>
@@ -215,14 +181,10 @@ export default function PmfDashboard() {
                                     Objectif
                                 </p>
                                 <p className="text-xl font-bold text-gray-900 mt-1">
-                                    {targetMet === true
-                                        ? '✅ Atteint'
-                                        : targetMet === false
-                                            ? '🔴 Non atteint'
-                                            : '—'}
+                                    {targetMetStatus === true ? '✅ Atteint' : targetMetStatus === false ? '🔴 Non atteint' : '--'}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary-100 text-primary-600">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600">
                                 <FiTrendingUp className="w-5 h-5" />
                             </div>
                         </div>
@@ -231,23 +193,23 @@ export default function PmfDashboard() {
                         </p>
                     </div>
 
-                    {/* Total Users (latest cohort) */}
+                    {/* Total Users */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                    Utilisateurs (dernière cohorte)
+                                    Utilisateurs
                                 </p>
                                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                                    {latestCohort?.total_users ?? '—'}
+                                    {latestCohort?.total_users ?? '--'}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-indigo-50 text-indigo-600">
                                 <FiUsers className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-xs text-gray-400 mt-3">
-                            Cohorte : {latestCohort?.cohort_label ?? '—'}
+                            Dernière cohorte : {latestCohort?.cohort_label ?? '--'}
                         </p>
                     </div>
 
@@ -256,18 +218,18 @@ export default function PmfDashboard() {
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                    Activés (audio 7j)
+                                    Activés
                                 </p>
                                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                                    {latestWeek0?.activated_users ?? '—'}
+                                    {latestWeek0?.activated_users ?? '--'}
                                 </p>
                             </div>
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 text-purple-600">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-50 text-purple-600">
                                 <FiHeadphones className="w-5 h-5" />
                             </div>
                         </div>
                         <p className="text-xs text-gray-400 mt-3">
-                            ≥1 audio dans les 7 premiers jours
+                            Activation audio (W0)
                         </p>
                     </div>
                 </motion.div>
@@ -289,6 +251,6 @@ export default function PmfDashboard() {
                     <CohortTable data={cohortData} />
                 </motion.div>
             </div>
-        </main>
+        </div>
     )
 }
