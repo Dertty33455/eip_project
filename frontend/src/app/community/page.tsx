@@ -29,9 +29,9 @@ const fadeInUp = {
 // Post Card Component
 function PostCard({ post, onLike, onComment, onShare }: { 
   post: any
-  onLike: (postId: string) => Promise<void>
-  onComment: (postId: string, content: string) => Promise<void>
-  onShare: (postId: string) => Promise<void>
+  onLike: (postId: string) => Promise<any>
+  onComment: (postId: string, content: string) => Promise<any>
+  onShare: (postId: string) => Promise<any>
 }) {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()

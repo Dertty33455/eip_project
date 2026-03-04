@@ -30,7 +30,7 @@ interface CohortWeek {
     activated_users: number | null
 }
 
-interface CohortData {
+interface LocalCohortData {
     cohort_week: string
     cohort_label: string
     total_users: number
@@ -52,7 +52,7 @@ interface CohortsResponse {
     }>
 }
 
-const STATIC_COHORT_DATA: CohortData[] = [
+const STATIC_COHORT_DATA: LocalCohortData[] = [
     {
         cohort_week: '2026-01-13',
         cohort_label: 'Jan 13 - 19',
@@ -141,7 +141,7 @@ const STATIC_PMF_SCORE: PmfScoreData = {
     target_met: false,
 }
 
-function transformCohorts(response: CohortsResponse | null): CohortData[] {
+function transformCohorts(response: CohortsResponse | null): LocalCohortData[] {
     if (!response?.cohorts) return STATIC_COHORT_DATA
 
     return response.cohorts.map((cohort) => ({
@@ -159,7 +159,7 @@ function transformCohorts(response: CohortsResponse | null): CohortData[] {
 export default function PmfDashboard() {
     const { user, isLoading: authLoading } = useAuth()
     const { get } = useApi()
-    const [cohortData, setCohortData] = useState<CohortData[]>(STATIC_COHORT_DATA)
+    const [cohortData, setCohortData] = useState<LocalCohortData[]>(STATIC_COHORT_DATA)
     const [pmfScore, setPmfScore] = useState<PmfScoreData>(STATIC_PMF_SCORE)
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
