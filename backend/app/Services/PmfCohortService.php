@@ -159,11 +159,12 @@ class PmfCohortService
         $usersWithAudio = DB::table('users as u')
             ->join('user_activities as ua', function ($join) {
                 $join->on('ua.user_id', '=', 'u.id')
-                     ->where('ua.action', '=', 'audio.played');
+                     ->where('ua.action', 'audio.played');
             })
             ->where('u.created_at', '>=', $latestCohortStart)
             ->where('u.created_at', '<=', $cohortEndDate->endOfDay())
-            ->whereRaw('ua.created_at <= ' . $this->dateAddDays($driver, 'u.created_at', 7))
+            ->where('ua.created_at', '>=', $latestCohortStart)
+            ->where('ua.created_at', '<=', $cohortEndDate->endOfDay())
             ->distinct('u.id')
             ->count('u.id');
 
@@ -211,7 +212,7 @@ class PmfCohortService
         $rows = DB::table('users as u')
             ->join('user_activities as ua', function ($join) {
                 $join->on('ua.user_id', '=', 'u.id')
-                     ->where('ua.action', '=', 'audio.played');
+                     ->where('ua.action', 'audio.played');
             })
             ->selectRaw("{$cohortWeekExpr} as cohort_week")
             ->selectRaw("{$relativeWeekExpr} as relative_week")
@@ -236,7 +237,7 @@ class PmfCohortService
     {
         if ($driver === 'sqlite') {
             // SQLite: compute Monday of the week
-            return "DATE({$column}, 'weekday 1', '-7 days')";
+            return "DATE({$column}, 'weekday 0', '-6 days')";
         }
 
         // PostgreSQL / MySQL
@@ -253,16 +254,19 @@ class PmfCohortService
      */
     private function relativeWeekExpression(string $driver): string
     {
+        $uStart = $this->weekStartExpression($driver, 'u.created_at');
+        $uaStart = $this->weekStartExpression($driver, 'ua.created_at');
+
         if ($driver === 'sqlite') {
-            return "CAST((JULIANDAY(ua.created_at) - JULIANDAY(u.created_at)) / 7 AS INTEGER)";
+            return "CAST((JULIANDAY({$uaStart}) - JULIANDAY({$uStart})) / 7 AS INTEGER)";
         }
 
         if ($driver === 'pgsql') {
-            return "FLOOR(EXTRACT(EPOCH FROM (ua.created_at - u.created_at)) / 604800)::int";
+            return "FLOOR(EXTRACT(EPOCH FROM ({$uaStart}::timestamp - {$uStart}::timestamp)) / 604800)::int";
         }
 
         // MySQL
-        return "FLOOR(TIMESTAMPDIFF(SECOND, u.created_at, ua.created_at) / 604800)";
+        return "TIMESTAMPDIFF(WEEK, {$uStart}, {$uaStart})";
     }
 
     /**

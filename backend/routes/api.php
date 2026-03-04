@@ -118,6 +118,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('pmf/cohorts', [PmfCohortController::class, 'cohorts']);
     Route::get('pmf/score', [PmfCohortController::class, 'score']);
 
+    // Admin Dashboard
+    Route::get('admin/stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'stats']);
+    Route::get('admin/top-books', [\App\Http\Controllers\Api\AdminDashboardController::class, 'topBooks']);
+    Route::get('admin/users', [\App\Http\Controllers\Api\UserController::class, 'index']); // I need to make sure index exists
+    Route::get('admin/reports', [\App\Http\Controllers\Api\ReportController::class, 'index']);
+    Route::get('admin/orders/recent', [\App\Http\Controllers\Api\OrderController::class, 'index']); // Or create a special one
+
     // audiobooks related management (protected)
     Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);
     Route::delete('audiobooks/{id}/related/{relatedId}', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'destroy']);

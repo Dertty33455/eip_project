@@ -10,6 +10,37 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
+     * Display a listing of users.
+     */
+    public function index(Request $request)
+    {
+        $query = User::query()->orderBy('created_at', 'desc');
+
+        $limit = (int) $request->query('limit', 20);
+        $limit = max(1, min($limit, 100));
+
+        $users = $query->paginate($limit);
+
+        // Transform to match frontend expectations if necessary
+        $users->getCollection()->transform(function ($user) {
+            return [
+                'id' => $user->id,
+                'username' => $user->username,
+                'firstName' => $user->first_name,
+                'lastName' => $user->last_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'role' => $user->role,
+                'status' => $user->status ?? 'ACTIVE',
+                'createdAt' => $user->created_at,
+                'avatar' => $user->avatar,
+            ];
+        });
+
+        return response()->json($users);
+    }
+
+    /**
      * Display a public profile by username.
      *
      * Responses roughly match the shape expected by the frontend.

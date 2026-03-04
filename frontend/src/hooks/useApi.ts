@@ -30,10 +30,10 @@ export function useApi<T = any>() {
     apiOptions?: ApiOptions
   ): Promise<{ data: T | null; error: string | null; raw?: any }> => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
-    
+
     try {
       const fullUrl = url.startsWith('http') ? url : `${API_BASE}${url}`
-      
+
       // Get token from localStorage for Bearer auth
       let token = ''
       if (typeof window !== 'undefined') {
@@ -48,9 +48,9 @@ export function useApi<T = any>() {
         }
       }
 
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...(options?.headers as Record<string, string>),
       }
 
       // Add Authorization header if token exists
@@ -83,10 +83,10 @@ export function useApi<T = any>() {
         headers,
         credentials: 'include', // send cookies for auth/session
       })
-      
+
       const text = await res.text()
       const data = text ? JSON.parse(text) : null
-      
+
       if (!res.ok) {
         // Try to surface validation errors if provided
         let errorMessage = data.error || data.message || 'Une erreur est survenue'
@@ -98,29 +98,29 @@ export function useApi<T = any>() {
           }
         }
         setState({ data: null, error: errorMessage, isLoading: false })
-        
+
         if (apiOptions?.showErrorToast !== false) {
           toast.error(errorMessage)
         }
-        
+
         return { data: null, error: errorMessage, raw: data }
       }
-      
+
       setState({ data, error: null, isLoading: false })
-      
+
       if (apiOptions?.showSuccessToast) {
         toast.success(apiOptions.successMessage || 'Opération réussie')
       }
-      
+
       return { data, error: null }
     } catch (error: any) {
       const errorMessage = error.message || 'Erreur de connexion'
       setState({ data: null, error: errorMessage, isLoading: false })
-      
+
       if (apiOptions?.showErrorToast !== false) {
         toast.error(errorMessage)
       }
-      
+
       return { data: null, error: errorMessage }
     }
   }, [])
@@ -159,7 +159,7 @@ export function useApi<T = any>() {
 // Custom hooks for specific API endpoints
 export function useBooks() {
   const api = useApi()
-  
+
   const getBooks = useCallback(async (params?: {
     page?: number
     limit?: number
@@ -180,7 +180,7 @@ export function useBooks() {
       })
     }
     const { data, error } = await api.get(`/api/books?${searchParams.toString()}`)
-    
+
     // Transform Laravel pagination format to frontend format
     if (data && !error) {
       return {
@@ -235,7 +235,7 @@ export function useBooks() {
 
 export function useAudiobooks() {
   const api = useApi()
-  
+
   const getAudiobooks = useCallback(async (params?: {
     page?: number
     limit?: number
@@ -251,7 +251,7 @@ export function useAudiobooks() {
       })
     }
     const { data, error } = await api.get(`/api/audiobooks?${searchParams.toString()}`)
-    
+
     // Transform Laravel pagination format to frontend format
     if (data && !error) {
       return {
@@ -282,7 +282,7 @@ export function useAudiobooks() {
 
 export function useWallet() {
   const api = useApi()
-  
+
   const getWallet = useCallback(async () => {
     return api.get('/api/wallet')
   }, [api])
@@ -319,7 +319,7 @@ export function useWallet() {
 
 export function usePosts() {
   const api = useApi()
-  
+
   const getPosts = useCallback(async (params?: {
     page?: number
     limit?: number
@@ -334,7 +334,7 @@ export function usePosts() {
       })
     }
     const { data, error } = await api.get(`/api/posts?${searchParams.toString()}`)
-    
+
     // Transform Laravel pagination format
     if (data && !error) {
       return {
@@ -394,7 +394,7 @@ export function usePosts() {
 
 export function useFavorites() {
   const api = useApi()
-  
+
   const getFavorites = useCallback(async () => {
     return api.get('/api/favorites')
   }, [api])
@@ -412,7 +412,7 @@ export function useFavorites() {
 
 export function useNotifications() {
   const api = useApi()
-  
+
   const getNotifications = useCallback(async () => {
     return api.get('/api/notifications')
   }, [api])
@@ -430,7 +430,7 @@ export function useNotifications() {
 
 export function useCategories() {
   const api = useApi()
-  
+
   const getCategories = useCallback(async () => {
     return api.get('/api/categories')
   }, [api])
@@ -443,7 +443,7 @@ export function useCategories() {
 
 export function useSearch() {
   const api = useApi()
-  
+
   const search = useCallback(async (query: string, type?: 'all' | 'books' | 'audiobooks' | 'users') => {
     const params = new URLSearchParams({ q: query })
     if (type) params.set('type', type)
@@ -458,7 +458,7 @@ export function useSearch() {
 
 export function useOrders() {
   const api = useApi()
-  
+
   const getOrders = useCallback(async () => {
     return api.get('/api/orders')
   }, [api])
@@ -484,7 +484,7 @@ export function useOrders() {
 
 export function useSubscriptions() {
   const api = useApi()
-  
+
   const getSubscription = useCallback(async () => {
     return api.get('/api/subscriptions')
   }, [api])
@@ -504,5 +504,23 @@ export function useSubscriptions() {
     ...api,
     getSubscription,
     subscribe,
+  }
+}
+
+export function usePmf() {
+  const api = useApi()
+
+  const getCohorts = useCallback(async (weeks: number = 12) => {
+    return api.get(`/api/pmf/cohorts?weeks=${weeks}`)
+  }, [api])
+
+  const getScore = useCallback(async () => {
+    return api.get('/api/pmf/score')
+  }, [api])
+
+  return {
+    ...api,
+    getCohorts,
+    getScore,
   }
 }

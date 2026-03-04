@@ -24,7 +24,9 @@ class AuthController extends Controller
             'last_name' => 'required|string|max:255',
             'username' => 'required|string|unique:users,username',
             'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
+            'role' => 'nullable|string|in:USER,SELLER',
         ]);
 
         if ($validator->fails()) {
@@ -37,7 +39,9 @@ class AuthController extends Controller
             'last_name' => $data['last_name'],
             'username' => $data['username'],
             'email' => $data['email'],
+            'phone' => $input['phone'] ?? null,
             'password' => Hash::make($data['password']),
+            'role' => $data['role'] ?? 'USER',
         ]);
 
         $token = $user->createToken('api_token')->plainTextToken;
