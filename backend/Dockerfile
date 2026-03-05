@@ -12,11 +12,14 @@ WORKDIR /var/www/html
 # Copier les fichiers du projet
 COPY . .
 
+# Créer les dossiers nécessaires et donner les permissions
+RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache \
+    storage/framework/sessions storage/framework/views \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
 # Installer les dépendances Laravel
 RUN composer install --no-dev --optimize-autoloader
-
-# Permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Config nginx
 COPY docker/nginx.conf /etc/nginx/nginx.conf
