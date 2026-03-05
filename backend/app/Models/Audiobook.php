@@ -44,7 +44,7 @@ class Audiobook extends Model
 
     public function chapters(): HasMany
     {
-        return $this->hasMany(AudioChapter::class);
+        return $this->hasMany(AudioChapter::class)->orderBy('chapter_number');;
     }
 
     public function reviews(): HasMany

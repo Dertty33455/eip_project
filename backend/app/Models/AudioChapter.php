@@ -17,6 +17,33 @@ class AudioChapter extends Model
         'is_free',
     ];
 
+    protected $appends = [
+        'isFree',
+        'audioUrl',
+        'order',
+    ];
+
+    /**
+     * Get the is_free attribute.
+     * The first chapter is always free.
+     */
+    public function getIsFreeAttribute($value): bool
+    {
+        $chapterNumber = $this->attributes['chapter_number'] ?? 0;
+        $actualValue = $value ?? ($this->attributes['is_free'] ?? false);
+        return ($chapterNumber <= 1) ?: (bool) $actualValue;
+    }
+
+    public function getAudioUrlAttribute(): ?string
+    {
+        return $this->attributes['audio_url'] ?? null;
+    }
+
+    public function getOrderAttribute(): int
+    {
+        return (int) ($this->attributes['chapter_number'] ?? 0);
+    }
+
     /**
      * The audiobook that this chapter belongs to.
      */
