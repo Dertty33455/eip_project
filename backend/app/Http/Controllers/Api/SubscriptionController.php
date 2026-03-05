@@ -29,31 +29,66 @@ class SubscriptionController extends CrudController
     }
 
     /**
-     * Override store to track subscription creation.
+     * Store and initiate subscription payment.
      */
     public function store(Request $request)
     {
-        $response = parent::store($request);
-
         $user = Auth::user();
-        if ($user && $response->getStatusCode() === 201) {
-            $data = json_decode($response->getContent(), true);
-            $subscriptionId = $data['id'] ?? null;
-
-            ActivityTracker::track(
-                userId: $user->id,
-                action: 'subscription.created',
-                targetType: 'subscription',
-                targetId: $subscriptionId ? (int) $subscriptionId : null,
-                metadata: [
-                    'plan' => $request->input('plan'),
-                    'price' => $request->input('price'),
-                    'currency' => $request->input('currency'),
-                ],
-                request: $request
-            );
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return $response;
+        $validated = $request->validate([
+            'plan' => 'required|string|exists:subscription_pricings,plan',
+            'provider' => 'required|string|in:MTN_MOMO,MOOV_MONEY,WALLET',
+            'phoneNumber' => 'required_if:provider,MTN_MOMO,MOOV_MONEY|string',
+        ]);
+
+        $pricing = \App\Models\SubscriptionPricing::where('plan', $validated['plan'])->first();
+        
+        // Create pending subscription
+        $subscription = Subscription::create([
+            'user_id' => $user->id,
+            'plan' => $pricing->plan,
+            'status' => 'PENDING',
+            'price' => $pricing->price,
+            'currency' => $pricing->currency ?? 'XOF',
+            'auto_renew' => true,
+        ]);
+
+        // Initiate payment
+        $payments = app(\App\Services\PaymentService::class);
+        $result = $payments->initiateSubscriptionPayment(
+            $subscription, 
+            $validated['provider'], 
+            $validated['phoneNumber'] ?? null
+        );
+
+        if (!$result['success']) {
+            $subscription->update(['status' => 'FAILED']);
+            return response()->json([
+                'error' => $result['error'] ?? 'Payment initiation failed',
+                'subscription' => $subscription
+            ], 400);
+        }
+
+        ActivityTracker::track(
+            userId: $user->id,
+            action: 'subscription.initiated',
+            targetType: 'subscription',
+            targetId: $subscription->id,
+            metadata: [
+                'plan' => $subscription->plan,
+                'provider' => $validated['provider'],
+                'amount' => $subscription->price,
+            ],
+            request: $request
+        );
+
+        return response()->json([
+            'message' => 'Subscription initiated',
+            'subscription' => $subscription->load(['pricing', 'transactions']),
+            'payment' => $result
+        ], 201);
     }
 }
