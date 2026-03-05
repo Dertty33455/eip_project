@@ -52,8 +52,102 @@ interface CohortsResponse {
     }>
 }
 
+<<<<<<< HEAD
+const STATIC_COHORT_DATA: LocalCohortData[] = [
+    {
+        cohort_week: '2026-01-13',
+        cohort_label: 'Jan 13 - 19',
+        total_users: 2,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+            { relative_week: 5, activation_rate: 0, activated_users: 0 },
+            { relative_week: 6, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-01-20',
+        cohort_label: 'Jan 20 - 26',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+            { relative_week: 5, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-01-27',
+        cohort_label: 'Jan 27 - Feb 2',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+            { relative_week: 4, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-03',
+        cohort_label: 'Feb 3 - 9',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+            { relative_week: 3, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-10',
+        cohort_label: 'Feb 10 - 16',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+            { relative_week: 2, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-17',
+        cohort_label: 'Feb 17 - 23',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+            { relative_week: 1, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+    {
+        cohort_week: '2026-02-24',
+        cohort_label: 'Feb 24 - Mar 2',
+        total_users: 0,
+        weeks: [
+            { relative_week: 0, activation_rate: 0, activated_users: 0 },
+        ],
+    },
+]
+
+const STATIC_PMF_SCORE: PmfScoreData = {
+    pmf_target: 75,
+    latest_cohort: '2026-02-24',
+    total_users: 2,
+    users_with_audio_7d: 0,
+    score: 0,
+    target_met: false,
+}
+
+function transformCohorts(response: CohortsResponse | null): LocalCohortData[] {
+    if (!response?.cohorts) return STATIC_COHORT_DATA
+=======
 function transformCohorts(response: CohortsResponse | null): LocalCohortData[] {
     if (!response?.cohorts) return []
+>>>>>>> 2c056069b0b738b6ce8e22bd6d0c918f8456294e
 
     return response.cohorts.map((cohort) => ({
         cohort_week: cohort.cohort_week,
@@ -68,10 +162,17 @@ function transformCohorts(response: CohortsResponse | null): LocalCohortData[] {
 }
 
 export default function PmfDashboard() {
+<<<<<<< HEAD
+    const { user, isLoading: authLoading } = useAuth()
+    const { get } = useApi()
+    const [cohortData, setCohortData] = useState<LocalCohortData[]>(STATIC_COHORT_DATA)
+    const [pmfScore, setPmfScore] = useState<PmfScoreData>(STATIC_PMF_SCORE)
+=======
     const { user } = useAuth()
     const { getCohorts, getScore } = usePmf()
     const [cohortData, setCohortData] = useState<LocalCohortData[]>([])
     const [pmfScore, setPmfScore] = useState<PmfScoreData | null>(null)
+>>>>>>> 2c056069b0b738b6ce8e22bd6d0c918f8456294e
     const [isLoading, setIsLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
 

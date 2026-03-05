@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Playfair_Display, Ubuntu } from 'next/font/google'
+import { Inter, Playfair_Display } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { Navbar } from '@/components/layout/Navbar'
@@ -17,11 +17,7 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
 })
 
-const ubuntu = Ubuntu({ 
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  variable: '--font-ubuntu',
-})
+// Note: Ubuntu font removed from Google fetch to avoid build-time network fetch failures
 
 export const metadata: Metadata = {
   title: 'BookShell - Plateforme Africaine de Livres & Audiobooks',
@@ -44,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${playfair.variable} ${ubuntu.variable}`}>
+    <html lang="fr" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <AuthProvider>
           <NavigationProgress />
