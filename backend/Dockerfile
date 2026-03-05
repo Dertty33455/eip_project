@@ -24,7 +24,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Config nginx
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/start.sh /docker/start.sh
+RUN chmod +x /docker/start.sh
 
 EXPOSE 8080
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/docker/start.sh"]
