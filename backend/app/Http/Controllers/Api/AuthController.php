@@ -170,5 +170,30 @@ class AuthController extends Controller
         $user->load('wallet','books','ordersAsBuyer','ordersAsSeller','notifications','favorites');
         return response()->json(['user' => $user, 'message' => 'Profile updated successfully']);
     }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'sometimes|array',
+            'push' => 'sometimes|array',
+            'sms' => 'sometimes|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+        $user->notification_settings = array_merge(
+            $user->notification_settings ?? [],
+            $validator->validated()
+        );
+        $user->save();
+
+        return response()->json([
+            'user' => $user,
+            'message' => 'Notification settings updated successfully'
+        ]);
+    }
 }
 

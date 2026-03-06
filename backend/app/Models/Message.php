@@ -30,4 +30,18 @@ class Message extends Model
     {
         return $this->belongsTo(User::class, 'receiver_id');
     }
+
+    protected static function booted()
+    {
+        static::created(function ($message) {
+            $message->receiver->notifications()->create([
+                'user_id' => $message->receiver_id,
+                'type' => 'NEW_MESSAGE',
+                'title' => 'Nouveau message',
+                'message' => $message->sender->username . ' vous a envoyé un message.',
+                'link' => '/messages/' . $message->conversation_id,
+                'metadata' => json_encode(['conversation_id' => $message->conversation_id, 'sender_id' => $message->sender_id]),
+            ]);
+        });
+    }
 }

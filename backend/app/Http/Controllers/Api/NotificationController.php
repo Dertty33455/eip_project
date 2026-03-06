@@ -23,4 +23,18 @@ class NotificationController extends CrudController
     {
         return ['user'];
     }
+
+    public function markAsRead(Request $request)
+    {
+        $request->validate([
+            'notificationIds' => 'required|array',
+            'notificationIds.*' => 'exists:notifications,id',
+        ]);
+
+        Notification::whereIn('id', $request->notificationIds)
+            ->where('user_id', $request->user()->id)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'Notifications marked as read']);
+    }
 }

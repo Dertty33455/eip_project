@@ -9,6 +9,8 @@ const protectedRoutes = [
   '/sell',
   '/favorites',
   '/orders',
+  '/notifications',
+  '/messages',
 ]
 
 // Admin routes
@@ -19,23 +21,23 @@ const adminRoutes = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('auth_token')?.value
-  
+
   // Check if it's a protected route
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route))
-  
+
   // Redirect to login if accessing protected route without token
   if ((isProtectedRoute || isAdminRoute) && !token) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
-  
+
   // Redirect authenticated users away from login/register
   if (token && (pathname === '/login' || pathname === '/register')) {
     return NextResponse.redirect(new URL('/', request.url))
   }
-  
+
   return NextResponse.next()
 }
 

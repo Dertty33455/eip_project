@@ -192,16 +192,15 @@ export function useAuth() {
   const logout = async () => {
     try {
       await api.post('/api/auth/logout', {})
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
       clearAuth()
       // Clear cart store as well
       const { setCart } = (await import('./useCartStore')).useCartStore.getState()
       setCart(null)
       toast.success('Déconnexion réussie')
-      window.location.href = '/'
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Clear auth even on error
-      clearAuth()
+      window.location.href = '/login'
     }
   }
 

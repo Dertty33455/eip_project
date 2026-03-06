@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiUser, 
-  FiLock, 
-  FiBell, 
+import {
+  FiArrowLeft,
+  FiUser,
+  FiLock,
+  FiBell,
   FiCreditCard,
   FiShield,
   FiGlobe,
@@ -42,7 +42,7 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile')
   const [loading, setLoading] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  
+
   // Profile form
   const [profileForm, setProfileForm] = useState({
     firstName: '',
@@ -112,7 +112,7 @@ export default function SettingsPage() {
       router.push('/login')
       return
     }
-    
+
     // Populate form with user data
     setProfileForm({
       firstName: user.firstName || '',
@@ -121,7 +121,7 @@ export default function SettingsPage() {
       email: user.email || '',
       phone: user.phone || '',
       bio: user.bio || '',
-      city: user.city || '',
+      city: user.location || '',
       country: user.country || ''
     })
   }, [user])
@@ -129,7 +129,7 @@ export default function SettingsPage() {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me`, {
         method: 'PUT',
@@ -154,7 +154,7 @@ export default function SettingsPage() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error('Les mots de passe ne correspondent pas')
       return
@@ -166,7 +166,7 @@ export default function SettingsPage() {
     }
 
     setLoading(true)
-    
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me/password`, {
         method: 'PUT',
@@ -194,8 +194,8 @@ export default function SettingsPage() {
   const handleNotificationSave = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me/notifications`, {
-        method: 'PUT',
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/me/notifications`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(notifications)
       })
@@ -237,7 +237,7 @@ export default function SettingsPage() {
     setLoading(true)
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/me`, { method: 'DELETE' })
-      
+
       if (res.ok) {
         toast.success('Compte supprimé')
         logout()
@@ -276,7 +276,7 @@ export default function SettingsPage() {
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
@@ -296,11 +296,10 @@ export default function SettingsPage() {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id as SettingsSection)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                    activeSection === section.id
-                      ? 'bg-primary/10 text-primary border-r-4 border-primary'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${activeSection === section.id
+                    ? 'bg-primary/10 text-primary border-r-4 border-primary'
+                    : 'text-gray-600 hover:bg-gray-50'
+                    }`}
                 >
                   <section.icon className="w-5 h-5" />
                   {section.label}
@@ -357,7 +356,7 @@ export default function SettingsPage() {
                         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-2xl font-bold">
                           {profileForm.firstName[0]}{profileForm.lastName[0]}
                         </div>
-                        <button 
+                        <button
                           type="button"
                           className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
                         >
@@ -367,7 +366,7 @@ export default function SettingsPage() {
                       <div>
                         <h3 className="font-medium text-gray-800">{profileForm.firstName} {profileForm.lastName}</h3>
                         <p className="text-sm text-gray-500">@{profileForm.username}</p>
-                        <button 
+                        <button
                           type="button"
                           className="mt-2 text-sm text-primary hover:underline"
                         >
@@ -851,8 +850,8 @@ export default function SettingsPage() {
                       { key: 'showListeningHistory', label: 'Historique d\'écoute', description: 'Partager vos audiobooks écoutés' },
                       { key: 'allowTagging', label: 'Autoriser les mentions', description: 'Permettre aux autres de vous mentionner' }
                     ].map((item) => (
-                      <label 
-                        key={item.key} 
+                      <label
+                        key={item.key}
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer"
                       >
                         <div>
@@ -921,11 +920,10 @@ export default function SettingsPage() {
                           <button
                             key={option.value}
                             onClick={() => setPreferences({ ...preferences, theme: option.value })}
-                            className={`p-4 border-2 rounded-xl text-center transition-colors ${
-                              preferences.theme === option.value
-                                ? 'border-primary bg-primary/5 text-primary'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
+                            className={`p-4 border-2 rounded-xl text-center transition-colors ${preferences.theme === option.value
+                              ? 'border-primary bg-primary/5 text-primary'
+                              : 'border-gray-200 hover:border-gray-300'
+                              }`}
                           >
                             <option.icon className="w-6 h-6 mx-auto mb-2" />
                             {option.label}

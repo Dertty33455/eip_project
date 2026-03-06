@@ -21,4 +21,18 @@ class Follow extends Model
     {
         return $this->belongsTo(User::class, 'following_id');
     }
+
+    protected static function booted()
+    {
+        static::created(function ($follow) {
+            $follow->following->notifications()->create([
+                'user_id' => $follow->following_id,
+                'type' => 'NEW_FOLLOWER',
+                'title' => 'Nouveau follower',
+                'message' => $follow->follower->username . ' a commencé à vous suivre.',
+                'link' => '/profile/' . $follow->follower->username,
+                'metadata' => json_encode(['follower_id' => $follow->follower_id]),
+            ]);
+        });
+    }
 }

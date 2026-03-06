@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::patch('/auth/me', [AuthController::class, 'updateProfile']);
+    Route::patch('/auth/me/notifications', [AuthController::class, 'updateNotificationSettings']);
 
     Route::apiResource('books', BookController::class, ['except' => ['index', 'show']]);
 
@@ -107,6 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('messages', MessageController::class);
     Route::apiResource('conversations', ConversationController::class);
     Route::apiResource('conversation-participants', ConversationParticipantController::class);
+    Route::patch('notifications/mark-as-read', [NotificationController::class, 'markAsRead']);
     Route::apiResource('notifications', NotificationController::class);
     Route::apiResource('favorites', FavoriteController::class);
     Route::apiResource('reviews', ReviewController::class);

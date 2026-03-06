@@ -24,6 +24,9 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useNotifications } from '@/hooks/useApi'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 const navigation = [
   { name: 'Accueil', href: '/', icon: HiOutlineHome },
@@ -118,14 +121,7 @@ export function Navbar() {
             {user ? (
               <>
                 {/* Notifications */}
-                <Link
-                  href="/notifications"
-                  prefetch={true}
-                  className="relative p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
-                >
-                  <HiOutlineBell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                </Link>
+                <NotificationDropdown />
 
                 {/* Cart */}
                 <Link
@@ -371,5 +367,118 @@ export function Navbar() {
         )}
       </AnimatePresence>
     </header>
+  )
+}
+
+function NotificationDropdown() {
+  const [isOpen, setIsOpen] = useState(false)
+  const { data, isLoading, getNotifications, markAsRead } = useNotifications()
+  const [notifications, setNotifications] = useState<any[]>([])
+  const unreadCount = notifications.filter(n => !n.is_read).length
+
+  useEffect(() => {
+    loadNotifications()
+    // Poll every 60 seconds
+    const interval = setInterval(loadNotifications, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    if (data?.data) {
+      setNotifications(data.data)
+    }
+  }, [data])
+
+  const loadNotifications = async () => {
+    await getNotifications()
+  }
+
+  const handleMarkAsRead = async (id: string) => {
+    await markAsRead([id])
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
+      >
+        <HiOutlineBell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-cream-200 overflow-hidden z-50"
+            >
+              <div className="p-4 border-b border-cream-100 flex items-center justify-between">
+                <h3 className="font-bold text-earth-900">Notifications</h3>
+                <Link href="/notifications" className="text-xs text-primary-600 hover:underline" onClick={() => setIsOpen(false)}>
+                  Voir tout
+                </Link>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                {isLoading && notifications.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs text-earth-500">Chargement...</p>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <HiOutlineBell className="w-8 h-8 text-earth-200 mx-auto mb-2" />
+                    <p className="text-sm text-earth-500">Aucune notification</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-cream-50">
+                    {notifications.slice(0, 5).map((n) => (
+                      <div
+                        key={n.id}
+                        className={cn(
+                          "p-4 hover:bg-cream-50 transition-colors cursor-pointer relative",
+                          !n.is_read && "bg-primary-50/20"
+                        )}
+                        onClick={() => {
+                          if (!n.is_read) handleMarkAsRead(n.id)
+                          if (n.link) window.location.href = n.link
+                        }}
+                      >
+                        {!n.is_read && <div className="absolute top-4 right-4 w-2 h-2 bg-primary-500 rounded-full" />}
+                        <h4 className="text-sm font-bold text-earth-900 pr-4">{n.title}</h4>
+                        <p className="text-xs text-earth-600 mt-1 line-clamp-2">{n.message}</p>
+                        <p className="text-[10px] text-earth-400 mt-2">
+                          {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {notifications.length > 5 && (
+                <Link
+                  href="/notifications"
+                  className="block p-3 text-center text-sm font-medium text-earth-600 hover:bg-cream-50 border-t border-cream-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Voir les {notifications.length - 5} autres
+                </Link>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

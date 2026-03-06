@@ -34,6 +34,7 @@ return new class extends Migration
             $table->boolean('is_email_verified')->default(false);
             $table->boolean('is_phone_verified')->default(false);
             $table->timestamp('last_login_at')->nullable();
+            $table->json('notification_settings')->nullable();
 
             $table->rememberToken();
             $table->timestamps();

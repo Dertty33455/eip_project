@@ -57,4 +57,33 @@ class Order extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    protected static function booted()
+    {
+        static::created(function ($order) {
+            // Notify seller
+            $order->seller->notifications()->create([
+                'user_id' => $order->seller_id,
+                'type' => 'NEW_ORDER',
+                'title' => 'Nouvelle commande',
+                'message' => 'Vous avez reçu une nouvelle commande #' . $order->order_number,
+                'link' => '/orders/' . $order->id,
+                'metadata' => json_encode(['order_id' => $order->id]),
+            ]);
+        });
+
+        static::updated(function ($order) {
+            if ($order->isDirty('status')) {
+                // Notify buyer of status change
+                $order->buyer->notifications()->create([
+                    'user_id' => $order->buyer_id,
+                    'type' => 'ORDER_STATUS_UPDATE',
+                    'title' => 'Mise à jour de votre commande',
+                    'message' => 'Le statut de votre commande #' . $order->order_number . ' est maintenant : ' . $order->status,
+                    'link' => '/orders/' . $order->id,
+                    'metadata' => json_encode(['order_id' => $order->id, 'status' => $order->status]),
+                ]);
+            }
+        });
+    }
 }

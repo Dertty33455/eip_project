@@ -88,6 +88,21 @@ export function useApi<T = any>() {
       const data = text ? JSON.parse(text) : null
 
       if (!res.ok) {
+        // Handle unauthorized errors (401)
+        if (res.status === 401) {
+          if (typeof window !== 'undefined') {
+            // Clear auth data and redirect to login
+            localStorage.removeItem('BookShell-auth')
+            document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+
+            // Avoid infinite redirect if already on login or register
+            const pathname = window.location.pathname
+            if (pathname !== '/login' && pathname !== '/register') {
+              window.location.href = `/login?redirect=${encodeURIComponent(pathname)}`
+            }
+          }
+        }
+
         // Try to surface validation errors if provided
         let errorMessage = data.error || data.message || 'Une erreur est survenue'
         if (data.errors) {
@@ -418,7 +433,7 @@ export function useNotifications() {
   }, [api])
 
   const markAsRead = useCallback(async (ids: string[]) => {
-    return api.patch('/api/notifications', { notificationIds: ids })
+    return api.patch('/api/notifications/mark-as-read', { notificationIds: ids })
   }, [api])
 
   return {
