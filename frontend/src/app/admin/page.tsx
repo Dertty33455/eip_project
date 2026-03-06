@@ -250,6 +250,78 @@ function TopBooks({ books }: { books: any[] }) {
   )
 }
 
+// Recent Activities Component
+function RecentActivities({ activities }: { activities: any[] }) {
+  const getActivityDescription = (activity: any) => {
+    const user = activity.user ? `${activity.user.firstName} ${activity.user.lastName}` : 'Utilisateur inconnu'
+
+    switch (activity.action) {
+      case 'post.created':
+        return `${user} a publié un nouveau post`
+      case 'post.liked':
+        return `${user} a aimé une publication`
+      case 'post.commented':
+        return `${user} a commenté une publication`
+      case 'post.shared':
+        return `${user} a partagé une publication`
+      case 'book.favorited':
+        return `${user} a ajouté un livre à ses favoris`
+      case 'audiobook.favorited':
+        return `${user} a ajouté un audiobook à ses favoris`
+      case 'book.reviewed':
+        return `${user} a laissé un avis sur un livre`
+      case 'audiobook.reviewed':
+        return `${user} a laissé un avis sur un audiobook`
+      case 'audio.played':
+        return `${user} a commencé l'écoute d'un audiobook`
+      case 'user.followed':
+        return `${user} a suivi un autre utilisateur`
+      case 'order.placed':
+        return `${user} a passé une commande`
+      case 'wallet.deposit':
+        return `${user} a effectué un dépôt sur son portefeuille`
+      case 'wallet.withdrawal':
+        return `${user} a effectué un retrait de son portefeuille`
+      case 'subscription.purchased':
+        return `${user} s'est abonné`
+      default:
+        return `${user}: ${activity.action}`
+    }
+  }
+
+  const formatTime = (date: string) => {
+    const d = new Date(date)
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-semibold text-gray-900">Activités récentes</h3>
+        <span className="text-xs text-gray-500">Temps réel</span>
+      </div>
+
+      <div className="space-y-4">
+        {activities.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">Aucune activité récente</p>
+        ) : (
+          activities.map((activity) => (
+            <div key={activity.id} className="flex items-center gap-3 pb-4 border-b last:border-0 last:pb-0">
+              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-800 line-clamp-1">
+                  {getActivityDescription(activity)}
+                </p>
+                <p className="text-xs text-gray-500">{formatTime(activity.created_at)}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth()
   const { get } = useApi()
@@ -258,18 +330,20 @@ export default function AdminDashboard() {
   const [reports, setReports] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
   const [topBooks, setTopBooks] = useState<any[]>([])
+  const [activities, setActivities] = useState<any[]>([])
 
   useEffect(() => {
     fetchAdminData()
   }, [])
 
   const fetchAdminData = async () => {
-    const [statsRes, usersRes, reportsRes, ordersRes, topBooksRes] = await Promise.all([
+    const [statsRes, usersRes, reportsRes, ordersRes, topBooksRes, activitiesRes] = await Promise.all([
       get('/api/admin/stats'),
       get('/api/admin/users?limit=5'),
       get('/api/admin/reports?status=PENDING&limit=5'),
       get('/api/admin/orders/recent?limit=5'),
       get('/api/admin/top-books'),
+      get('/api/admin/activities?limit=8'),
     ])
 
     if (statsRes.data) setStats(statsRes.data)
@@ -277,6 +351,7 @@ export default function AdminDashboard() {
     if (reportsRes.data?.data) setReports(reportsRes.data.data)
     if (ordersRes.data?.data) setOrders(ordersRes.data.data)
     if (topBooksRes.data) setTopBooks(topBooksRes.data)
+    if (activitiesRes.data) setActivities(activitiesRes.data)
   }
 
   const displayStats = stats || {
@@ -295,6 +370,7 @@ export default function AdminDashboard() {
   const displayUsers = users
   const displayReports = reports
   const displayTopBooks = topBooks
+  const displayActivities = activities
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
@@ -382,6 +458,7 @@ export default function AdminDashboard() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
           <RecentOrders orders={displayOrders} />
+          <RecentActivities activities={displayActivities} />
           <TopBooks books={displayTopBooks} />
         </div>
 

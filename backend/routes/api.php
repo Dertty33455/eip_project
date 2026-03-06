@@ -128,6 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Dashboard
     Route::get('admin/stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'stats']);
     Route::get('admin/top-books', [\App\Http\Controllers\Api\AdminDashboardController::class, 'topBooks']);
+    Route::get('admin/activities', [\App\Http\Controllers\Api\AdminDashboardController::class, 'recentActivities']);
     Route::get('admin/users', [\App\Http\Controllers\Api\UserController::class, 'index']); // I need to make sure index exists
     Route::get('admin/reports', [\App\Http\Controllers\Api\ReportController::class, 'index']);
     Route::get('admin/orders/recent', [\App\Http\Controllers\Api\OrderController::class, 'index']); // Or create a special one

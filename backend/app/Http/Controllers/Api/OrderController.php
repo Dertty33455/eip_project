@@ -92,6 +92,18 @@ class OrderController extends CrudController
 
             $orders[] = $order;
             $totalToPay += $totalAmount;
+
+            \App\Services\ActivityTracker::track(
+                userId: $user->id,
+                action: 'order.placed',
+                targetType: 'order',
+                targetId: $order->id,
+                metadata: [
+                    'order_number' => $order->order_number,
+                    'total_amount' => $order->total_amount,
+                ],
+                request: $request
+            );
         }
 
         if ($request->payment_method === 'WALLET') {

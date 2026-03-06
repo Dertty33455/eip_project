@@ -44,6 +44,15 @@ class WalletController extends CrudController
             return response()->json(['error' => $result['error']], 500);
         }
 
+        \App\Services\ActivityTracker::track(
+            userId: $user->id,
+            action: 'wallet.deposit',
+            targetType: 'wallet',
+            targetId: $wallet->id,
+            metadata: ['amount' => $request->amount, 'provider' => $request->provider],
+            request: $request
+        );
+
         return response()->json(['transactionId' => $result['transaction']->id]);
     }
 
@@ -65,6 +74,15 @@ class WalletController extends CrudController
         if (! $result['success']) {
             return response()->json(['error' => $result['error']], 500);
         }
+
+        \App\Services\ActivityTracker::track(
+            userId: $user->id,
+            action: 'wallet.withdrawal',
+            targetType: 'wallet',
+            targetId: $wallet->id,
+            metadata: ['amount' => $request->amount, 'provider' => $request->provider],
+            request: $request
+        );
 
         return response()->json(['transactionId' => $result['transaction']->id]);
     }

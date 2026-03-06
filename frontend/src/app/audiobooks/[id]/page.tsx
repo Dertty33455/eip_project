@@ -30,6 +30,7 @@ import {
 } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useAudioProgress } from '@/hooks/useApi'
 
 interface Chapter {
   id: string
@@ -89,6 +90,7 @@ export default function AudiobookDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user, subscription, requireAuth } = useAuth()
+  const { saveProgress } = useAudioProgress()
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const [audiobook, setAudiobook] = useState<Audiobook | null>(null)
@@ -108,6 +110,9 @@ export default function AudiobookDetailPage() {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   const [showPlayer, setShowPlayer] = useState(false)
+
+  const [lastProgressSaved, setLastProgressSaved] = useState(0)
+  const lastProgressSavedRef = useRef(0)
 
   const hasActiveSubscription = subscription?.status === 'ACTIVE'
 
@@ -266,6 +271,16 @@ export default function AudiobookDetailPage() {
       if (audioRef.current) {
         audioRef.current.currentTime = 0
         audioRef.current.play().catch(console.error)
+
+        // Track activity: Start play
+        if (user) {
+          saveProgress({
+            audiobook_id: parseInt(params.id as string),
+            chapter_id: parseInt(chapter.id),
+            position: 0,
+            speed: playbackSpeed
+          })
+        }
       }
     })
   }
@@ -314,7 +329,22 @@ export default function AudiobookDetailPage() {
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime)
+      const currentPos = audioRef.current.currentTime
+      setCurrentTime(currentPos)
+
+      // Throttled progress saving: every 30 seconds
+      if (user && audiobook && Math.abs(currentPos - lastProgressSavedRef.current) > 30) {
+        lastProgressSavedRef.current = currentPos
+        const currentChapter = audiobook.chapters?.[currentChapterIndex]
+        if (currentChapter) {
+          saveProgress({
+            audiobook_id: parseInt(params.id as string),
+            chapter_id: parseInt(currentChapter.id),
+            position: Math.floor(currentPos),
+            speed: playbackSpeed
+          })
+        }
+      }
     }
   }
 

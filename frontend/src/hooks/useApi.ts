@@ -522,6 +522,34 @@ export function useSubscriptions() {
   }
 }
 
+export function useAudioProgress() {
+  const api = useApi()
+
+  const saveProgress = useCallback(async (data: {
+    audiobook_id: number
+    chapter_id: number
+    position?: number
+    completed?: boolean
+    speed?: number
+  }) => {
+    // We use the authenticated user_id from the backend session
+    return api.post('/api/audio-progress', {
+      ...data,
+      user_id: undefined, // Let backend handle user_id from Auth::id() or provide it if needed
+    })
+  }, [api])
+
+  const getProgress = useCallback(async (audiobookId: number) => {
+    return api.get(`/api/audio-progress?audiobook_id=${audiobookId}`)
+  }, [api])
+
+  return {
+    ...api,
+    saveProgress,
+    getProgress,
+  }
+}
+
 export function usePmf() {
   const api = useApi()
 

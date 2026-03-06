@@ -71,6 +71,18 @@ class AdminDashboardController extends Controller
         return response()->json($topBooks);
     }
 
+    public function recentActivities(Request $request)
+    {
+        $limit = $request->query('limit', 10);
+        
+        $activities = \App\Models\UserActivity::with('user')
+            ->orderByDesc('created_at')
+            ->take($limit)
+            ->get();
+            
+        return response()->json($activities);
+    }
+
     private function calculateGrowth($current, $previous)
     {
         if ($previous == 0) {
