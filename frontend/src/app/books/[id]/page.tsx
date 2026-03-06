@@ -104,7 +104,7 @@ const conditionColors = {
 export default function BookDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, requireAuth } = useAuth()
   const [book, setBook] = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
@@ -264,25 +264,21 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
   }
 
   const toggleFavorite = async () => {
-    if (!user) {
-      toast.error('Connectez-vous pour ajouter aux favoris')
-      router.push('/login')
-      return
-    }
+    requireAuth(async () => {
+      try {
+        const { error } = await api.request('/api/favorites', {
+          method: isFavorite ? 'DELETE' : 'POST',
+          body: JSON.stringify({ bookId: params.id })
+        })
 
-    try {
-      const { error } = await api.request('/api/favorites', {
-        method: isFavorite ? 'DELETE' : 'POST',
-        body: JSON.stringify({ bookId: params.id })
-      })
-
-      if (!error) {
-        setIsFavorite(!isFavorite)
-        toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris')
+        if (!error) {
+          setIsFavorite(!isFavorite)
+          toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris')
+        }
+      } catch (error) {
+        toast.error('Erreur lors de la mise à jour des favoris')
       }
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour des favoris')
-    }
+    })
   }
 
   const handleAddToCart = async () => {
@@ -295,14 +291,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
   }
 
   const buyNow = async () => {
-    if (!user) {
-      toast.error('Connectez-vous pour acheter')
-      router.push('/login')
-      return
-    }
-
-    await handleAddToCart()
-    router.push('/checkout')
+    requireAuth(async () => {
+      await handleAddToCart()
+      router.push('/checkout')
+    })
   }
 
   const shareBook = async () => {
@@ -324,23 +316,20 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) {
-      toast.error('Connectez-vous pour laisser un avis')
-      return
-    }
+    requireAuth(async () => {
+      try {
+        const { error } = await api.post(`/api/books/${params.id}/reviews`, newReview)
 
-    try {
-      const { error } = await api.post(`/api/books/${params.id}/reviews`, newReview)
-
-      if (!error) {
-        toast.success('Avis ajouté avec succès')
-        setShowReviewModal(false)
-        setNewReview({ rating: 5, comment: '' })
-        fetchBook()
+        if (!error) {
+          toast.success('Avis ajouté avec succès')
+          setShowReviewModal(false)
+          setNewReview({ rating: 5, comment: '' })
+          fetchBook()
+        }
+      } catch (error) {
+        // toast.error is handled by api.post
       }
-    } catch (error) {
-      // toast.error is handled by api.post
-    }
+    })
   }
 
   const formatPrice = (price: number) => {
@@ -581,7 +570,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <button
-                  onClick={handleAddToCart}
+                  onClick={() => requireAuth(handleAddToCart)}
                   disabled={book.stock === 0 || addingToCart}
                   className="flex-1 py-4 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >

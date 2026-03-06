@@ -4,20 +4,21 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { 
-  FiSearch, 
-  FiFilter, 
-  FiGrid, 
-  FiList, 
-  FiStar, 
-  FiHeart, 
+import {
+  FiSearch,
+  FiFilter,
+  FiGrid,
+  FiList,
+  FiStar,
+  FiHeart,
   FiShoppingCart,
   FiBook,
   FiChevronDown,
   FiX
 } from 'react-icons/fi'
 import { useBooks, useCategories } from '@/hooks/useApi'
-// import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
+import toast from 'react-hot-toast'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -34,23 +35,23 @@ const staggerContainer = {
 
 // Book Card Component
 function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
-  // const { isAuthenticated } = useAuth()
+  const { requireAuth } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
-  
+
   const conditionLabels: Record<string, string> = {
     NEW: 'Neuf',
     LIKE_NEW: 'Comme neuf',
     GOOD: 'Bon état',
     ACCEPTABLE: 'Acceptable',
   }
-  
+
   const conditionColors: Record<string, string> = {
     NEW: 'badge-success',
     LIKE_NEW: 'badge-info',
     GOOD: 'badge-warning',
     ACCEPTABLE: 'badge-secondary',
   }
-  
+
   if (view === 'list') {
     return (
       <motion.div
@@ -72,7 +73,7 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
             </div>
           )}
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 flex flex-col">
           <div className="flex items-start justify-between">
@@ -88,33 +89,37 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
               {conditionLabels[book.condition] || book.condition}
             </span>
           </div>
-          
+
           <p className="text-sm text-gray-500 mt-2 line-clamp-2">{book.description}</p>
-          
+
           <div className="flex items-center gap-2 mt-2">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
-                <FiStar 
-                  key={i} 
-                  className={`w-4 h-4 ${i < (book.rating || 4) ? 'text-accent fill-accent' : 'text-gray-300'}`} 
+                <FiStar
+                  key={i}
+                  className={`w-4 h-4 ${i < (book.rating || 4) ? 'text-accent fill-accent' : 'text-gray-300'}`}
                 />
               ))}
             </div>
             <span className="text-sm text-gray-500">({book._count?.reviews || 0} avis)</span>
           </div>
-          
+
           <div className="flex items-center justify-between mt-auto pt-4">
             <span className="text-xl font-bold text-primary">{book.price?.toLocaleString()} XOF</span>
             <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`p-2 rounded-full transition-colors ${
-                  isFavorite ? 'bg-red-100 text-red-500' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                }`}
+              <button
+                onClick={() => requireAuth(() => setIsFavorite(!isFavorite))}
+                className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-red-100 text-red-500' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                  }`}
               >
                 <FiHeart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
               </button>
-              <button className="btn-primary flex items-center gap-2 py-2 px-4">
+              <button
+                onClick={() => requireAuth(() => {
+                  toast.success('Ajouté au panier')
+                })}
+                className="btn-primary flex items-center gap-2 py-2 px-4"
+              >
                 <FiShoppingCart className="w-5 h-5" />
                 <span>Ajouter</span>
               </button>
@@ -124,7 +129,7 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
       </motion.div>
     )
   }
-  
+
   return (
     <motion.div
       variants={fadeInUp}
@@ -144,11 +149,10 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
             <FiBook className="w-12 h-12 text-gray-400" />
           </div>
         )}
-        <button 
-          onClick={() => setIsFavorite(!isFavorite)}
-          className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
-            isFavorite ? 'bg-red-100 text-red-500' : 'bg-white/90 text-gray-600 hover:text-red-500'
-          }`}
+        <button
+          onClick={() => requireAuth(() => setIsFavorite(!isFavorite))}
+          className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isFavorite ? 'bg-red-100 text-red-500' : 'bg-white/90 text-gray-600 hover:text-red-500'
+            }`}
         >
           <FiHeart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
         </button>
@@ -158,27 +162,32 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
           </span>
         )}
       </div>
-      
+
       <Link href={`/books/${book.id}`}>
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 hover:text-primary transition-colors">
           {book.title}
         </h3>
       </Link>
       <p className="text-sm text-gray-500 mb-2">{book.author}</p>
-      
+
       <div className="flex items-center gap-1 mb-3">
         {[...Array(5)].map((_, i) => (
-          <FiStar 
-            key={i} 
-            className={`w-4 h-4 ${i < (book.rating || 4) ? 'text-accent fill-accent' : 'text-gray-300'}`} 
+          <FiStar
+            key={i}
+            className={`w-4 h-4 ${i < (book.rating || 4) ? 'text-accent fill-accent' : 'text-gray-300'}`}
           />
         ))}
         <span className="text-sm text-gray-500 ml-1">({book._count?.reviews || 0})</span>
       </div>
-      
+
       <div className="flex items-center justify-between">
         <span className="text-lg font-bold text-primary">{book.price?.toLocaleString()} XOF</span>
-        <button className="w-10 h-10 bg-primary/10 hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-colors">
+        <button
+          onClick={() => requireAuth(() => {
+            toast.success('Ajouté au panier')
+          })}
+          className="w-10 h-10 bg-primary/10 hover:bg-primary hover:text-white rounded-full flex items-center justify-center transition-colors"
+        >
           <FiShoppingCart className="w-5 h-5" />
         </button>
       </div>
@@ -187,13 +196,13 @@ function BookCard({ book, view }: { book: any; view: 'grid' | 'list' }) {
 }
 
 // Filter Sidebar Component
-function FilterSidebar({ 
-  filters, 
-  setFilters, 
+function FilterSidebar({
+  filters,
+  setFilters,
   categories,
   isOpen,
-  onClose 
-}: { 
+  onClose
+}: {
   filters: any
   setFilters: (filters: any) => void
   categories: any[]
@@ -206,24 +215,24 @@ function FilterSidebar({
     { value: 'GOOD', label: 'Bon état' },
     { value: 'ACCEPTABLE', label: 'Acceptable' },
   ]
-  
+
   const priceRanges = [
     { min: 0, max: 5000, label: 'Moins de 5 000 XOF' },
     { min: 5000, max: 10000, label: '5 000 - 10 000 XOF' },
     { min: 10000, max: 20000, label: '10 000 - 20 000 XOF' },
     { min: 20000, max: null, label: 'Plus de 20 000 XOF' },
   ]
-  
+
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       <aside className={`
         fixed top-0 left-0 h-full w-80 bg-white z-50 p-6 overflow-y-auto
         transform transition-transform duration-300
@@ -237,7 +246,7 @@ function FilterSidebar({
             <FiX className="w-5 h-5" />
           </button>
         </div>
-        
+
         {/* Categories */}
         <div className="mb-6">
           <h4 className="font-semibold text-gray-900 mb-3">Catégories</h4>
@@ -266,7 +275,7 @@ function FilterSidebar({
             ))}
           </div>
         </div>
-        
+
         {/* Condition */}
         <div className="mb-6">
           <h4 className="font-semibold text-gray-900 mb-3">État</h4>
@@ -285,9 +294,9 @@ function FilterSidebar({
                 <input
                   type="checkbox"
                   checked={filters.condition === cond.value}
-                  onChange={() => setFilters({ 
-                    ...filters, 
-                    condition: filters.condition === cond.value ? '' : cond.value 
+                  onChange={() => setFilters({
+                    ...filters,
+                    condition: filters.condition === cond.value ? '' : cond.value
                   })}
                   className="w-4 h-4 text-primary rounded focus:ring-primary"
                 />
@@ -296,7 +305,7 @@ function FilterSidebar({
             ))}
           </div>
         </div>
-        
+
         {/* Price Range */}
         <div className="mb-6">
           <h4 className="font-semibold text-gray-900 mb-3">Prix</h4>
@@ -307,10 +316,10 @@ function FilterSidebar({
                   type="radio"
                   name="price"
                   checked={filters.minPrice === range.min && filters.maxPrice === range.max}
-                  onChange={() => setFilters({ 
-                    ...filters, 
-                    minPrice: range.min, 
-                    maxPrice: range.max 
+                  onChange={() => setFilters({
+                    ...filters,
+                    minPrice: range.min,
+                    maxPrice: range.max
                   })}
                   className="w-4 h-4 text-primary focus:ring-primary"
                 />
@@ -318,7 +327,7 @@ function FilterSidebar({
               </label>
             ))}
           </div>
-          
+
           {/* Custom Price Range */}
           <div className="mt-4 flex items-center gap-2">
             <input
@@ -338,7 +347,7 @@ function FilterSidebar({
             />
           </div>
         </div>
-        
+
         {/* Clear Filters */}
         <button
           onClick={() => setFilters({
@@ -369,13 +378,13 @@ export default function BooksPage() {
     sortBy: 'createdAt',
     order: 'desc',
   })
-  
+
   const { getBooks, isLoading } = useBooks()
   const { getCategories } = useCategories()
   const [books, setBooks] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 1 })
-  
+
   useEffect(() => {
     const fetchCategories = async () => {
       const { data } = await getCategories()
@@ -385,7 +394,7 @@ export default function BooksPage() {
     }
     fetchCategories()
   }, [])
-  
+
   useEffect(() => {
     const fetchBooks = async () => {
       const { data } = await getBooks({
@@ -404,12 +413,12 @@ export default function BooksPage() {
     }
     fetchBooks()
   }, [filters, pagination.page])
-  
+
   // Demo books
 
-  
+
   const displayBooks = books
-  
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -423,18 +432,18 @@ export default function BooksPage() {
           </p>
         </div>
       </div>
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           {/* Filters Sidebar */}
-          <FilterSidebar 
+          <FilterSidebar
             filters={filters}
             setFilters={setFilters}
             categories={categories}
             isOpen={showFilters}
             onClose={() => setShowFilters(false)}
           />
-          
+
           {/* Main Content */}
           <div className="flex-1">
             {/* Toolbar */}
@@ -450,7 +459,7 @@ export default function BooksPage() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
-              
+
               <div className="flex items-center gap-4">
                 {/* Mobile Filter Button */}
                 <button
@@ -460,7 +469,7 @@ export default function BooksPage() {
                   <FiFilter className="w-5 h-5" />
                   <span>Filtres</span>
                 </button>
-                
+
                 {/* Sort */}
                 <div className="relative">
                   <select
@@ -480,7 +489,7 @@ export default function BooksPage() {
                   </select>
                   <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 </div>
-                
+
                 {/* View Toggle */}
                 <div className="hidden md:flex items-center border border-gray-300 rounded-xl overflow-hidden">
                   <button
@@ -498,21 +507,21 @@ export default function BooksPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Results Info */}
             <div className="mb-6">
               <p className="text-gray-600">
                 {pagination.total || displayBooks.length} livres trouvés
               </p>
             </div>
-            
+
             {/* Books Grid/List */}
             {isLoading ? (
               <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={staggerContainer}
-                className={view === 'grid' 
+                className={view === 'grid'
                   ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
                   : 'space-y-4'
                 }
@@ -545,7 +554,7 @@ export default function BooksPage() {
                 initial="hidden"
                 animate="visible"
                 variants={staggerContainer}
-                className={view === 'grid' 
+                className={view === 'grid'
                   ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'
                   : 'space-y-4'
                 }
@@ -555,7 +564,7 @@ export default function BooksPage() {
                 ))}
               </motion.div>
             )}
-            
+
             {/* Pagination */}
             {pagination.pages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-12">
@@ -566,21 +575,20 @@ export default function BooksPage() {
                 >
                   Précédent
                 </button>
-                
+
                 {[...Array(pagination.pages)].map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setPagination({ ...pagination, page: i + 1 })}
-                    className={`w-10 h-10 rounded-lg ${
-                      pagination.page === i + 1 
-                        ? 'bg-primary text-white' 
-                        : 'border border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`w-10 h-10 rounded-lg ${pagination.page === i + 1
+                      ? 'bg-primary text-white'
+                      : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     {i + 1}
                   </button>
                 ))}
-                
+
                 <button
                   onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
                   disabled={pagination.page === pagination.pages}

@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { 
-  FiHeart, 
-  FiMessageCircle, 
-  FiShare2, 
+import {
+  FiHeart,
+  FiMessageCircle,
+  FiShare2,
   FiMoreHorizontal,
   FiImage,
   FiSend,
@@ -27,14 +27,14 @@ const fadeInUp = {
 }
 
 // Post Card Component
-function PostCard({ post, onLike, onComment, onShare }: { 
+function PostCard({ post, onLike, onComment, onShare }: {
   post: any
   onLike: (postId: string) => Promise<any>
   onComment: (postId: string, content: string) => Promise<any>
   onShare: (postId: string) => Promise<any>
 }) {
   const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, isLoading: authLoading, requireAuth } = useAuth()
   const [showComments, setShowComments] = useState(false)
   const [commentText, setCommentText] = useState('')
   // Calculate if user has liked this post
@@ -42,7 +42,7 @@ function PostCard({ post, onLike, onComment, onShare }: {
   const [likesCount, setLikesCount] = useState(post._count?.likes || post.likes?.length || 0)
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [likeLoading, setLikeLoading] = useState(false)
-  
+
   // Update like status when user or post changes
   useEffect(() => {
     setIsLiked(post.likes?.some((like: any) => like.user_id === user?.id) || false)
@@ -50,89 +50,81 @@ function PostCard({ post, onLike, onComment, onShare }: {
   const handleLike = async (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
-    
-    // wait for auth to finish loading before deciding
-    if (!user && !authLoading) {
-      router.push('/login')
-      return
-    }
-    if (authLoading || likeLoading) return
-    
-    // Optimistic update
-    const wasLiked = isLiked
-    const previousCount = likesCount
-    
-    setLikeLoading(true)
-    setIsLiked(!isLiked)
-    setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
-    
-    try {
-      const result = await onLike(post.id)
-      if (result?.likes_count !== undefined) {
-        setLikesCount(result.likes_count)
-      }
-    } catch (error) {
-      console.error('Like error:', error)
-      setIsLiked(wasLiked)
-      setLikesCount(previousCount)
-      toast.error('Erreur lors du like')
-    } finally {
-      setLikeLoading(false)
-    }
+
+    requireAuth(() => {
+      if (authLoading || likeLoading) return
+
+      // Optimistic update
+      const wasLiked = isLiked
+      const previousCount = likesCount
+
+      setLikeLoading(true)
+      setIsLiked(!isLiked)
+      setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
+
+      onLike(post.id).then(result => {
+        if (result?.likes_count !== undefined) {
+          setLikesCount(result.likes_count)
+        }
+      }).catch(error => {
+        console.error('Like error:', error)
+        setIsLiked(wasLiked)
+        setLikesCount(previousCount)
+        toast.error('Erreur lors du like')
+      }).finally(() => {
+        setLikeLoading(false)
+      })
+    })
   }
-  
+
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user && !authLoading) {
-      router.push('/login')
-      return
-    }
-    if (!commentText.trim()) return
-    if (authLoading) return
-    
-    setCommentsLoading(true)
-    try {
-      await onComment(post.id, commentText)
-      setCommentText('')
-    } catch (error) {
-      toast.error('Erreur lors de l\'ajout du commentaire')
-    } finally {
-      setCommentsLoading(false)
-    }
+    requireAuth(async () => {
+      if (!commentText.trim()) return
+      if (authLoading) return
+
+      setCommentsLoading(true)
+      try {
+        await onComment(post.id, commentText)
+        setCommentText('')
+      } catch (error) {
+        toast.error('Erreur lors de l\'ajout du commentaire')
+      } finally {
+        setCommentsLoading(false)
+      }
+    })
   }
 
   const handleShare = async (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
-    
-    if (!user && !authLoading) {
-      router.push('/login')
-      return
-    }
-    if (authLoading) return
-    
-    try {
-      await onShare(post.id)
-    } catch (error) {
-      toast.error('Erreur lors du partage')
-    }
+
+    requireAuth(async () => {
+      if (authLoading) return
+
+      try {
+        await onShare(post.id)
+      } catch (error) {
+        toast.error('Erreur lors du partage')
+      }
+    })
   }
-  
+
   const formatDate = (date: string) => {
     const now = new Date()
     const postDate = new Date(date)
     const diff = now.getTime() - postDate.getTime()
-    
+
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    
+
     if (minutes < 60) return `Il y a ${minutes} min`
     if (hours < 24) return `Il y a ${hours}h`
     if (days < 7) return `Il y a ${days}j`
     return postDate.toLocaleDateString('fr-FR')
   }
-  
+
   return (
     <motion.div
       variants={fadeInUp}
@@ -163,31 +155,29 @@ function PostCard({ post, onLike, onComment, onShare }: {
             <p className="text-sm text-gray-500">@{post.author?.username} · {formatDate(post.createdAt)}</p>
           </div>
         </Link>
-        
+
         <button className="p-2 hover:bg-gray-100 rounded-full">
           <FiMoreHorizontal className="w-5 h-5 text-gray-500" />
         </button>
       </div>
-      
+
       {/* Content */}
       <div className="mb-4">
         <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
       </div>
-      
+
       {/* Images */}
       {post.images && post.images.length > 0 && (
-        <div className={`mb-4 rounded-xl overflow-hidden grid gap-2 ${
-          post.images.length === 1 ? 'grid-cols-1' : 
-          post.images.length === 2 ? 'grid-cols-2' : 
-          post.images.length === 3 ? 'grid-cols-2' : 
-          'grid-cols-2'
-        }`}>
+        <div className={`mb-4 rounded-xl overflow-hidden grid gap-2 ${post.images.length === 1 ? 'grid-cols-1' :
+          post.images.length === 2 ? 'grid-cols-2' :
+            post.images.length === 3 ? 'grid-cols-2' :
+              'grid-cols-2'
+          }`}>
           {post.images.slice(0, 4).map((image: string, index: number) => (
-            <div 
+            <div
               key={index}
-              className={`relative ${
-                post.images.length === 3 && index === 0 ? 'row-span-2' : ''
-              } aspect-video bg-gray-100`}
+              className={`relative ${post.images.length === 3 && index === 0 ? 'row-span-2' : ''
+                } aspect-video bg-gray-100`}
             >
               <Image
                 src={image}
@@ -204,28 +194,27 @@ function PostCard({ post, onLike, onComment, onShare }: {
           ))}
         </div>
       )}
-      
+
       {/* Stats */}
       <div className="flex items-center gap-6 text-sm text-gray-500 pb-4 border-b">
         <span>{likesCount} j'aime</span>
         <span>{post._count?.comments || 0} commentaires</span>
         <span>{post._count?.shares || 0} partages</span>
       </div>
-      
+
       {/* Actions */}
       <div className="flex items-center justify-between pt-4">
-        <button 
+        <button
           onClick={handleLike}
           disabled={authLoading || likeLoading}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-            isLiked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:bg-gray-100'
-          } ${authLoading || likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isLiked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:bg-gray-100'
+            } ${authLoading || likeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <FiHeart className={`w-5 h-5 ${isLiked ? 'fill-red-500' : ''}`} />
           <span>J'aime</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={() => {
             if (!user) {
               router.push('/login')
@@ -238,20 +227,20 @@ function PostCard({ post, onLike, onComment, onShare }: {
           <FiMessageCircle className="w-5 h-5" />
           <span>Commenter</span>
         </button>
-        
-        <button 
+
+        <button
           onClick={handleShare}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <FiShare2 className="w-5 h-5" />
           <span>Partager</span>
         </button>
-        
+
         <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
           <FiBookmark className="w-5 h-5" />
         </button>
       </div>
-      
+
       {/* Comments Section */}
       {showComments && (
         <div className="mt-4 pt-4 border-t">
@@ -268,7 +257,7 @@ function PostCard({ post, onLike, onComment, onShare }: {
                 placeholder="Écrire un commentaire..."
                 className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-full focus:ring-2 focus:ring-primary focus:border-primary"
               />
-              <button 
+              <button
                 type="submit"
                 disabled={!commentText.trim() || commentsLoading}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-primary disabled:opacity-50"
@@ -277,7 +266,7 @@ function PostCard({ post, onLike, onComment, onShare }: {
               </button>
             </div>
           </form>
-          
+
           {/* Comments List */}
           <div className="space-y-4">
             {post.comments?.map((comment: any) => (
@@ -311,18 +300,18 @@ function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) =
   const [content, setContent] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!content.trim()) return
-    
+
     setIsLoading(true)
     await onPost(content)
     setContent('')
     setIsExpanded(false)
     setIsLoading(false)
   }
-  
+
   return (
     <div className="card mb-6">
       <form onSubmit={handleSubmit}>
@@ -339,17 +328,17 @@ function CreatePost({ onPost }: { onPost: (content: string, images?: string[]) =
               rows={isExpanded ? 4 : 1}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary resize-none"
             />
-            
+
             {isExpanded && (
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     type="button"
                     className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
                   >
                     <FiImage className="w-5 h-5" />
                   </button>
-                  <button 
+                  <button
                     type="button"
                     className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
                   >
@@ -379,7 +368,7 @@ function SuggestedUsers() {
     { id: '2', name: 'Kofi Asante', username: 'kofi_books', followers: 856 },
     { id: '3', name: 'Fatou Ndiaye', username: 'fatou_reads', followers: 2341 },
   ]
-  
+
   return (
     <div className="card">
       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -417,7 +406,7 @@ function TrendingTopics() {
     { tag: 'ClubDeLecture', posts: 543 },
     { tag: 'Audiobooks', posts: 321 },
   ]
-  
+
   return (
     <div className="card">
       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -426,8 +415,8 @@ function TrendingTopics() {
       </h3>
       <div className="space-y-3">
         {topics.map((topic) => (
-          <Link 
-            key={topic.tag} 
+          <Link
+            key={topic.tag}
             href={`/community?tag=${topic.tag}`}
             className="block hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
           >
@@ -445,18 +434,18 @@ export default function CommunityPage() {
   const { getPosts, createPost, likePost, commentPost, sharePost, isLoading } = usePosts()
   const [posts, setPosts] = useState<any[]>([])
   const [filter, setFilter] = useState<'recent' | 'popular' | 'following'>('recent')
-  
+
   useEffect(() => {
     fetchPosts()
   }, [filter])
-  
+
   const fetchPosts = async () => {
     const { data } = await getPosts({ limit: 20 })
     if (data?.posts) {
       setPosts(data.posts)
     }
   }
-  
+
   const handleCreatePost = async (content: string, images?: string[]) => {
     const { data, error } = await createPost({ content, images })
     if (data) {
@@ -464,13 +453,13 @@ export default function CommunityPage() {
       toast.success('Publication créée!')
     }
   }
-  
+
   const handleLike = async (postId: string) => {
     const { data, error } = await likePost(postId)
     if (error) {
       throw new Error(error)
     }
-    
+
     // Update the post with the new like status and count
     if (data) {
       setPosts(posts.map(p =>
@@ -479,18 +468,18 @@ export default function CommunityPage() {
           : p
       ))
     }
-    
+
     return data
   }
-  
+
   const handleComment = async (postId: string, content: string) => {
     const { data, error } = await commentPost(postId, content)
     if (error) {
       throw new Error(error)
     }
     if (data?.comment) {
-      setPosts(posts.map(p => 
-        p.id === postId 
+      setPosts(posts.map(p =>
+        p.id === postId
           ? { ...p, comments: [...(p.comments || []), data.comment], _count: { ...p._count, comments: (p._count?.comments || 0) + 1 } }
           : p
       ))
@@ -505,7 +494,7 @@ export default function CommunityPage() {
     }
     return data
   }
-  
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -519,14 +508,14 @@ export default function CommunityPage() {
           </p>
         </div>
       </div>
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           {/* Main Feed */}
           <div className="flex-1 max-w-2xl">
             {/* Create Post */}
             {user && <CreatePost onPost={handleCreatePost} />}
-            
+
             {/* Filter Tabs */}
             <div className="flex items-center gap-4 mb-6 bg-white rounded-xl p-2">
               {[
@@ -537,17 +526,16 @@ export default function CommunityPage() {
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key as any)}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    filter === tab.key 
-                      ? 'bg-primary text-white' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${filter === tab.key
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                    }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-            
+
             {/* Posts */}
             {isLoading ? (
               <div className="space-y-6">
@@ -577,8 +565,8 @@ export default function CommunityPage() {
                 className="space-y-6"
               >
                 {posts.map((post) => (
-                  <PostCard 
-                    key={post.id} 
+                  <PostCard
+                    key={post.id}
                     post={post}
                     onLike={handleLike}
                     onComment={handleComment}
@@ -592,7 +580,7 @@ export default function CommunityPage() {
                 {user && <p className="text-sm text-gray-400">Soyez le premier à partager!</p>}
               </div>
             )}
-            
+
             {/* Login CTA */}
             {!user && (
               <div className="card text-center mt-8">
@@ -613,7 +601,7 @@ export default function CommunityPage() {
               </div>
             )}
           </div>
-          
+
           {/* Sidebar */}
           <aside className="hidden lg:block w-80 space-y-6">
             <SuggestedUsers />

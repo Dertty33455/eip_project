@@ -88,7 +88,7 @@ export default function AudiobookDetailPage() {
 
   const params = useParams()
   const router = useRouter()
-  const { user, subscription } = useAuth()
+  const { user, subscription, requireAuth } = useAuth()
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const [audiobook, setAudiobook] = useState<Audiobook | null>(null)
@@ -204,27 +204,23 @@ export default function AudiobookDetailPage() {
   }
 
   const toggleFavorite = async () => {
-    if (!user) {
-      toast.error('Connectez-vous pour ajouter aux favoris')
-      router.push('/login')
-      return
-    }
+    requireAuth(async () => {
+      try {
+        const method = isFavorite ? 'DELETE' : 'POST'
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audiobookId: params.id })
+        })
 
-    try {
-      const method = isFavorite ? 'DELETE' : 'POST'
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audiobookId: params.id })
-      })
-
-      if (res.ok) {
-        setIsFavorite(!isFavorite)
-        toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris')
+        if (res.ok) {
+          setIsFavorite(!isFavorite)
+          toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris')
+        }
+      } catch (error) {
+        toast.error('Erreur lors de la mise à jour des favoris')
       }
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour des favoris')
-    }
+    })
   }
 
   const shareAudiobook = async () => {
@@ -250,26 +246,28 @@ export default function AudiobookDetailPage() {
   }
 
   const playChapter = (index: number) => {
-    if (!audiobook) return
-    const chapters = audiobook.chapters || []
-    const chapter = chapters[index]
+    requireAuth(() => {
+      if (!audiobook) return
+      const chapters = audiobook.chapters || []
+      const chapter = chapters[index]
 
-    if (!chapter) return
+      if (!chapter) return
 
-    if (!canPlayChapter(chapter)) {
-      toast.error('Abonnez-vous pour accéder à ce chapitre')
-      router.push('/subscriptions')
-      return
-    }
+      if (!canPlayChapter(chapter)) {
+        toast.error('Abonnez-vous pour accéder à ce chapitre')
+        router.push('/subscriptions')
+        return
+      }
 
-    setCurrentChapterIndex(index)
-    setShowPlayer(true)
-    setIsPlaying(true)
+      setCurrentChapterIndex(index)
+      setShowPlayer(true)
+      setIsPlaying(true)
 
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0
-      audioRef.current.play().catch(console.error)
-    }
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch(console.error)
+      }
+    })
   }
 
   const togglePlay = () => {

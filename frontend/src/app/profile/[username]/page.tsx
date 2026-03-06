@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiUser, 
-  FiMapPin, 
+import {
+  FiArrowLeft,
+  FiUser,
+  FiMapPin,
   FiCalendar,
   FiSettings,
   FiMail,
@@ -107,7 +107,7 @@ const conditionLabels: Record<string, string> = {
 export default function ProfilePage() {
   const params = useParams()
   const router = useRouter()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, requireAuth } = useAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
@@ -157,30 +157,26 @@ export default function ProfilePage() {
   }
 
   const toggleFollow = async () => {
-    if (!currentUser) {
-      toast.error('Connectez-vous pour suivre cet utilisateur')
-      router.push('/login')
-      return
-    }
+    requireAuth(async () => {
+      try {
+        const method = isFollowing ? 'DELETE' : 'POST'
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/${params.username}/follow`, { method })
 
-    try {
-      const method = isFollowing ? 'DELETE' : 'POST'
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/${params.username}/follow`, { method })
-
-      if (res.ok) {
-        setIsFollowing(!isFollowing)
-        setProfile(prev => prev ? {
-          ...prev,
-          stats: {
-            ...prev.stats,
-            followers: prev.stats.followers + (isFollowing ? -1 : 1)
-          }
-        } : null)
-        toast.success(isFollowing ? 'Vous ne suivez plus cet utilisateur' : 'Vous suivez maintenant cet utilisateur')
+        if (res.ok) {
+          setIsFollowing(!isFollowing)
+          setProfile(prev => prev ? {
+            ...prev,
+            stats: {
+              ...prev.stats,
+              followers: prev.stats.followers + (isFollowing ? -1 : 1)
+            }
+          } : null)
+          toast.success(isFollowing ? 'Vous ne suivez plus cet utilisateur' : 'Vous suivez maintenant cet utilisateur')
+        }
+      } catch (error) {
+        toast.error('Erreur lors de la mise à jour')
       }
-    } catch (error) {
-      toast.error('Erreur lors de la mise à jour')
-    }
+    })
   }
 
   const shareProfile = async () => {
@@ -224,7 +220,7 @@ export default function ProfilePage() {
     const now = new Date()
     const postDate = new Date(date)
     const diffInDays = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60 * 24))
-    
+
     if (diffInDays === 0) return 'Aujourd\'hui'
     if (diffInDays === 1) return 'Hier'
     if (diffInDays < 7) return `Il y a ${diffInDays} jours`
@@ -259,16 +255,16 @@ export default function ProfilePage() {
       <div className="relative h-48 md:h-64 bg-gradient-to-br from-primary to-secondary">
         <div className="absolute inset-0 bg-[url('/images/african-pattern.svg')] bg-repeat opacity-10"></div>
         {profile.coverImage && (
-          <img 
-            src={profile.coverImage} 
-            alt="Cover" 
+          <img
+            src={profile.coverImage}
+            alt="Cover"
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}
-        
+
         {/* Back button */}
         <div className="absolute top-4 left-4">
-          <button 
+          <button
             onClick={() => router.back()}
             className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-colors"
           >
@@ -278,14 +274,14 @@ export default function ProfilePage() {
 
         {/* Actions */}
         <div className="absolute top-4 right-4 flex gap-2">
-          <button 
+          <button
             onClick={shareProfile}
             className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-colors"
           >
             <FiShare2 className="w-5 h-5" />
           </button>
           {isOwnProfile && (
-            <Link 
+            <Link
               href="/settings"
               className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-colors"
             >
@@ -293,7 +289,7 @@ export default function ProfilePage() {
             </Link>
           )}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition-colors"
             >
@@ -351,16 +347,15 @@ export default function ProfilePage() {
                   </h1>
                   <p className="text-gray-500">@{profile.username}</p>
                 </div>
-                
+
                 {!isOwnProfile ? (
                   <div className="flex gap-3">
                     <button
                       onClick={toggleFollow}
-                      className={`px-6 py-2 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                        isFollowing
-                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          : 'bg-primary text-white hover:bg-primary/90'
-                      }`}
+                      className={`px-6 py-2 rounded-xl font-medium transition-colors flex items-center gap-2 ${isFollowing
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-primary text-white hover:bg-primary/90'
+                        }`}
                     >
                       {isFollowing ? (
                         <>
@@ -394,7 +389,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Bio & Info */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg p-6 mb-6"
@@ -402,7 +397,7 @@ export default function ProfilePage() {
           {profile.bio && (
             <p className="text-gray-700 whitespace-pre-line mb-4">{profile.bio}</p>
           )}
-          
+
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
             {profile.city && (
               <span className="flex items-center gap-1">
@@ -481,11 +476,10 @@ export default function ProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id as any)}
-                className={`flex-shrink-0 px-6 py-4 font-medium transition-colors relative flex items-center gap-2 ${
-                  selectedTab === tab.id
-                    ? 'text-primary'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex-shrink-0 px-6 py-4 font-medium transition-colors relative flex items-center gap-2 ${selectedTab === tab.id
+                  ? 'text-primary'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -571,17 +565,15 @@ export default function ProfilePage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setViewMode('grid')}
-                          className={`p-2 rounded-lg transition-colors ${
-                            viewMode === 'grid' ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-gray-100'
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-gray-100'
+                            }`}
                         >
                           <FiGrid className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => setViewMode('list')}
-                          className={`p-2 rounded-lg transition-colors ${
-                            viewMode === 'list' ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-gray-100'
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:bg-gray-100'
+                            }`}
                         >
                           <FiList className="w-5 h-5" />
                         </button>

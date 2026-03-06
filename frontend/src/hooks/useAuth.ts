@@ -240,6 +240,16 @@ export function useAuth() {
     setToken,
     fetchUser, // expose for manual calls if ever needed
 
+    requireAuth: (callback: () => void) => {
+      if (!user || !token) {
+        toast.error('Veuillez vous connecter pour continuer')
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+        return
+      }
+      callback()
+    },
+
     login,
     register,
     logout,
