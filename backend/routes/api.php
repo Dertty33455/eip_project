@@ -79,12 +79,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // generic resource routes (you can restrict methods as needed)
     // Route::apiResource('categories', CategoryController::class); // now public
+    Route::post('orders/checkout', [OrderController::class, 'checkout']);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('wallets', WalletController::class);
     // additional wallet operations
     Route::post('wallet/deposit', [WalletController::class, 'deposit']);
     Route::post('wallet/withdraw', [WalletController::class, 'withdraw']);
     Route::apiResource('transactions', TransactionController::class);
+    Route::get('cart', [CartItemController::class, 'getCart']);
+    Route::post('cart', [CartItemController::class, 'addToCart']);
+    Route::patch('cart-items/{id}', [CartItemController::class, 'updateQuantity']);
+    Route::delete('cart-items/{id}', [CartItemController::class, 'removeItem']);
     Route::apiResource('carts', CartController::class);
     Route::apiResource('cart-items', CartItemController::class);
     Route::apiResource('invoices', InvoiceController::class);

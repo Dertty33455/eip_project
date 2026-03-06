@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiHeart, 
-  FiShoppingCart, 
-  FiShare2, 
-  FiStar, 
-  FiUser, 
-  FiMapPin, 
+import {
+  FiArrowLeft,
+  FiHeart,
+  FiShoppingCart,
+  FiShare2,
+  FiStar,
+  FiUser,
+  FiMapPin,
   FiCalendar,
   FiBook,
   FiTruck,
@@ -24,6 +24,8 @@ import {
 } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useApi } from '@/hooks/useApi'
+import { useCart } from '@/hooks/useCart'
 
 interface Book {
   id: string
@@ -112,6 +114,8 @@ export default function BookDetailPage() {
   const [addingToCart, setAddingToCart] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
+  const api = useApi()
+  const { addToCart: addCartFromHook } = useCart()
 
   useEffect(() => {
     fetchBook()
@@ -120,123 +124,125 @@ export default function BookDetailPage() {
 
   const fetchBook = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books/${params.id}`)
-      if (res.ok) {
-        const data = await res.json()
+      const { data, error } = await api.get(`/api/books/${params.id}`)
+      if (!error && data) {
         setBook(data)
       } else {
-        // Demo data
-        setBook({
-          id: params.id as string,
-          title: 'L\'Enfant Noir',  
-          author: 'Camara Laye',
-          description: `L'Enfant noir est un roman autobiographique de l'écrivain guinéen Camara Laye, publié en 1953. Ce chef-d'œuvre de la littérature africaine raconte l'enfance de l'auteur en Haute-Guinée, dans un village traditionnel où les croyances animistes côtoient l'islam.
+        // Fallback to demo data if error or not found
+        // Only set demo data if no book is present to avoid clearing actual data on error
+        if (!book) {
+          setBook({
+            id: params.id as string,
+            title: 'L\'Enfant Noir',
+            author: 'Camara Laye',
+            description: `L'Enfant noir est un roman autobiographique de l'écrivain guinéen Camara Laye, publié en 1953. Ce chef-d'œuvre de la littérature africaine raconte l'enfance de l'auteur en Haute-Guinée, dans un village traditionnel où les croyances animistes côtoient l'islam.
 
 Le narrateur nous fait découvrir son univers familial : son père, forgeron respecté doté de pouvoirs mystiques, sa mère protectrice qui possède elle aussi des dons surnaturels, et les traditions ancestrales qui rythment la vie quotidienne.
 
 De son village natal à Conakry puis à Paris, l'auteur retrace son parcours initiatique, de la circoncision aux études supérieures, illustrant le déchirement entre tradition et modernité, entre l'Afrique et l'Occident.
 
 Ce récit poétique et nostalgique est devenu un classique incontournable de la littérature francophone, lu et étudié dans le monde entier.`,
-          price: 8500,
-          coverImage: '/images/books/enfant-noir.jpg',
-          condition: 'LIKE_NEW',
-          isbn: '978-2-266-02340-3',
-          publisher: 'Pocket',
-          publicationYear: 1953,
-          pageCount: 224,
-          language: 'Français',
-          stock: 15,
-          rating: 4.8,
-          reviewCount: 127,
-          category: {
-            id: '1',
-            name: 'Romans Africains',
-            slug: 'romans-africains'
-          },
-          seller: {
-            id: 's1',
-            username: 'librairie_dakar',
-            firstName: 'Amadou',
-            lastName: 'Diallo',
-            avatar: '/images/avatars/seller1.jpg',
-            isVerified: true,
-            totalSales: 342,
-            rating: 4.9,
-            createdAt: '2022-03-15',
-            city: 'Dakar',
-            country: 'Sénégal'
-          },
-          reviews: [
-            {
-              id: 'r1',
-              rating: 5,
-              comment: 'Un chef-d\'œuvre de la littérature africaine. Livraison rapide et livre en excellent état.',
-              createdAt: '2024-01-15',
-              user: {
-                id: 'u1',
-                username: 'fatou_reader',
-                firstName: 'Fatou',
-                avatar: '/images/avatars/user1.jpg'
+            price: 8500,
+            coverImage: '/images/books/enfant-noir.jpg',
+            condition: 'LIKE_NEW',
+            isbn: '978-2-266-02340-3',
+            publisher: 'Pocket',
+            publicationYear: 1953,
+            pageCount: 224,
+            language: 'Français',
+            stock: 15,
+            rating: 4.8,
+            reviewCount: 127,
+            category: {
+              id: '1',
+              name: 'Romans Africains',
+              slug: 'romans-africains'
+            },
+            seller: {
+              id: 's1',
+              username: 'librairie_dakar',
+              firstName: 'Amadou',
+              lastName: 'Diallo',
+              avatar: '/images/avatars/seller1.jpg',
+              isVerified: true,
+              totalSales: 342,
+              rating: 4.9,
+              createdAt: '2022-03-15',
+              city: 'Dakar',
+              country: 'Sénégal'
+            },
+            reviews: [
+              {
+                id: 'r1',
+                rating: 5,
+                comment: 'Un chef-d\'œuvre de la littérature africaine. Livraison rapide et livre en excellent état.',
+                createdAt: '2024-01-15',
+                user: {
+                  id: 'u1',
+                  username: 'fatou_reader',
+                  firstName: 'Fatou',
+                  avatar: '/images/avatars/user1.jpg'
+                }
+              },
+              {
+                id: 'r2',
+                rating: 5,
+                comment: 'Vendeur très sérieux. Le livre correspond parfaitement à la description.',
+                createdAt: '2024-01-10',
+                user: {
+                  id: 'u2',
+                  username: 'book_lover_ci',
+                  firstName: 'Kouamé'
+                }
+              },
+              {
+                id: 'r3',
+                rating: 4,
+                comment: 'Bon livre, quelques traces d\'usure mais rien de grave. Je recommande !',
+                createdAt: '2024-01-05',
+                user: {
+                  id: 'u3',
+                  username: 'mamadou_225',
+                  firstName: 'Mamadou'
+                }
               }
-            },
-            {
-              id: 'r2',
-              rating: 5,
-              comment: 'Vendeur très sérieux. Le livre correspond parfaitement à la description.',
-              createdAt: '2024-01-10',
-              user: {
-                id: 'u2',
-                username: 'book_lover_ci',
-                firstName: 'Kouamé'
+            ],
+            relatedBooks: [
+              {
+                id: 'rb1',
+                title: 'Une si longue lettre',
+                author: 'Mariama Bâ',
+                price: 7500,
+                coverImage: '/images/books/longue-lettre.jpg',
+                rating: 4.7
+              },
+              {
+                id: 'rb2',
+                title: 'Les Soleils des Indépendances',
+                author: 'Ahmadou Kourouma',
+                price: 9000,
+                coverImage: '/images/books/soleils.jpg',
+                rating: 4.6
+              },
+              {
+                id: 'rb3',
+                title: 'Ville cruelle',
+                author: 'Eza Boto',
+                price: 6500,
+                coverImage: '/images/books/ville-cruelle.jpg',
+                rating: 4.4
+              },
+              {
+                id: 'rb4',
+                title: 'Le Monde s\'effondre',
+                author: 'Chinua Achebe',
+                price: 8000,
+                coverImage: '/images/books/monde-effondre.jpg',
+                rating: 4.9
               }
-            },
-            {
-              id: 'r3',
-              rating: 4,
-              comment: 'Bon livre, quelques traces d\'usure mais rien de grave. Je recommande !',
-              createdAt: '2024-01-05',
-              user: {
-                id: 'u3',
-                username: 'mamadou_225',
-                firstName: 'Mamadou'
-              }
-            }
-          ],
-          relatedBooks: [
-            {
-              id: 'rb1',
-              title: 'Une si longue lettre',
-              author: 'Mariama Bâ',
-              price: 7500,
-              coverImage: '/images/books/longue-lettre.jpg',
-              rating: 4.7
-            },
-            {
-              id: 'rb2',
-              title: 'Les Soleils des Indépendances',
-              author: 'Ahmadou Kourouma',
-              price: 9000,
-              coverImage: '/images/books/soleils.jpg',
-              rating: 4.6
-            },
-            {
-              id: 'rb3',
-              title: 'Ville cruelle',
-              author: 'Eza Boto',
-              price: 6500,
-              coverImage: '/images/books/ville-cruelle.jpg',
-              rating: 4.4
-            },
-            {
-              id: 'rb4',
-              title: 'Le Monde s\'effondre',
-              author: 'Chinua Achebe',
-              price: 8000,
-              coverImage: '/images/books/monde-effondre.jpg',
-              rating: 4.9
-            }
-          ]
-        })
+            ]
+          })
+        }
       }
     } catch (error) {
       console.error('Error fetching book:', error)
@@ -248,9 +254,8 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
   const checkFavorite = async () => {
     if (!user) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/check?bookId=${params.id}`)
-      if (res.ok) {
-        const data = await res.json()
+      const { data, error } = await api.get(`/api/favorites/check?bookId=${params.id}`)
+      if (!error && data) {
         setIsFavorite(data.isFavorite)
       }
     } catch (error) {
@@ -266,14 +271,12 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
     }
 
     try {
-      const method = isFavorite ? 'DELETE' : 'POST'
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
+      const { error } = await api.request('/api/favorites', {
+        method: isFavorite ? 'DELETE' : 'POST',
         body: JSON.stringify({ bookId: params.id })
       })
 
-      if (res.ok) {
+      if (!error) {
         setIsFavorite(!isFavorite)
         toast.success(isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris')
       }
@@ -282,29 +285,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
     }
   }
 
-  const addToCart = async () => {
-    if (!user) {
-      toast.error('Connectez-vous pour ajouter au panier')
-      router.push('/login')
-      return
-    }
-
+  const handleAddToCart = async () => {
     setAddingToCart(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/cart`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookId: params.id, quantity })
-      })
-
-      if (res.ok) {
-        toast.success(`${quantity} livre(s) ajouté(s) au panier`)
-      } else {
-        const error = await res.json()
-        toast.error(error.message || 'Erreur lors de l\'ajout au panier')
-      }
-    } catch (error) {
-      toast.error('Erreur lors de l\'ajout au panier')
+      await addCartFromHook(params.id as string, quantity)
     } finally {
       setAddingToCart(false)
     }
@@ -316,8 +300,8 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
       router.push('/login')
       return
     }
-    
-    await addToCart()
+
+    await handleAddToCart()
     router.push('/checkout')
   }
 
@@ -346,22 +330,16 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books/${params.id}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReview)
-      })
+      const { error } = await api.post(`/api/books/${params.id}/reviews`, newReview)
 
-      if (res.ok) {
+      if (!error) {
         toast.success('Avis ajouté avec succès')
         setShowReviewModal(false)
         setNewReview({ rating: 5, comment: '' })
         fetchBook()
-      } else {
-        toast.error('Erreur lors de l\'ajout de l\'avis')
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'ajout de l\'avis')
+      // toast.error is handled by api.post
     }
   }
 
@@ -429,7 +407,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Section */}
           <div className="space-y-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-lg overflow-hidden aspect-[3/4] relative"
@@ -455,11 +433,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                 </button>
                 <button
                   onClick={toggleFavorite}
-                  className={`p-3 rounded-full shadow-lg transition-colors ${
-                    isFavorite 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-white/90 backdrop-blur hover:bg-white text-gray-600'
-                  }`}
+                  className={`p-3 rounded-full shadow-lg transition-colors ${isFavorite
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white/90 backdrop-blur hover:bg-white text-gray-600'
+                    }`}
                 >
                   <FiHeart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
@@ -467,7 +444,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
             </motion.div>
 
             {/* Seller Info Card - Desktop */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -506,7 +483,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                   </p>
                 </div>
               </div>
-              <Link 
+              <Link
                 href={`/profile/${book.seller.username}`}
                 className="mt-4 block text-center w-full py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
               >
@@ -517,13 +494,13 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
 
           {/* Details Section */}
           <div className="space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-lg p-6 lg:p-8"
             >
               {/* Category */}
-              <Link 
+              <Link
                 href={`/books?category=${book.category.slug}`}
                 className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4 hover:bg-primary/20 transition-colors"
               >
@@ -542,11 +519,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                   {[1, 2, 3, 4, 5].map((star) => (
                     <FiStar
                       key={star}
-                      className={`w-5 h-5 ${
-                        star <= Math.round(book.rating)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
+                      className={`w-5 h-5 ${star <= Math.round(book.rating)
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300'
+                        }`}
                     />
                   ))}
                 </div>
@@ -605,7 +581,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <button
-                  onClick={addToCart}
+                  onClick={handleAddToCart}
                   disabled={book.stock === 0 || addingToCart}
                   className="flex-1 py-4 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
@@ -645,7 +621,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
             </motion.div>
 
             {/* Seller Info Card - Mobile */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -670,7 +646,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                     <span>{book.seller.totalSales} ventes</span>
                   </div>
                 </div>
-                <Link 
+                <Link
                   href={`/profile/${book.seller.username}`}
                   className="px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
                 >
@@ -682,7 +658,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
         </div>
 
         {/* Tabs Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -698,11 +674,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
               <button
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id as any)}
-                className={`flex-1 py-4 text-center font-medium transition-colors relative ${
-                  selectedTab === tab.id
-                    ? 'text-primary'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex-1 py-4 text-center font-medium transition-colors relative ${selectedTab === tab.id
+                  ? 'text-primary'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 {tab.label}
                 {selectedTab === tab.id && (
@@ -837,11 +812,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <FiStar
                                     key={star}
-                                    className={`w-4 h-4 ${
-                                      star <= review.rating
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
+                                    className={`w-4 h-4 ${star <= review.rating
+                                      ? 'text-yellow-400 fill-current'
+                                      : 'text-gray-300'
+                                      }`}
                                   />
                                 ))}
                               </div>
@@ -860,7 +834,7 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
         </motion.div>
 
         {/* Related Books */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -872,30 +846,30 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
             {book.relatedBooks && book.relatedBooks.length > 0 ? (
               book.relatedBooks.map((relatedBook) => (
-              <Link
-                key={relatedBook.id}
-                href={`/books/${relatedBook.id}`}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group"
-              >
-                <div className="aspect-[3/4] bg-gradient-to-br from-primary/5 to-accent/5 relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <FiBook className="w-12 h-12 text-primary/20" />
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 group-hover:text-primary transition-colors line-clamp-1">
-                    {relatedBook.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-2">{relatedBook.author}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-primary">{formatPrice(relatedBook.price)}</span>
-                    <div className="flex items-center gap-1 text-sm">
-                      <FiStar className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-gray-600">{relatedBook.rating}</span>
+                <Link
+                  key={relatedBook.id}
+                  href={`/books/${relatedBook.id}`}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group"
+                >
+                  <div className="aspect-[3/4] bg-gradient-to-br from-primary/5 to-accent/5 relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FiBook className="w-12 h-12 text-primary/20" />
                     </div>
                   </div>
-                </div>
-              </Link>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-800 group-hover:text-primary transition-colors line-clamp-1">
+                      {relatedBook.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-2">{relatedBook.author}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-primary">{formatPrice(relatedBook.price)}</span>
+                      <div className="flex items-center gap-1 text-sm">
+                        <FiStar className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-gray-600">{relatedBook.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500">
@@ -939,11 +913,10 @@ Ce récit poétique et nostalgique est devenu un classique incontournable de la 
                         className="focus:outline-none"
                       >
                         <FiStar
-                          className={`w-8 h-8 ${
-                            star <= newReview.rating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300 hover:text-yellow-400'
-                          } transition-colors`}
+                          className={`w-8 h-8 ${star <= newReview.rating
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300 hover:text-yellow-400'
+                            } transition-colors`}
                         />
                       </button>
                     ))}

@@ -193,6 +193,9 @@ export function useAuth() {
     try {
       await api.post('/api/auth/logout', {})
       clearAuth()
+      // Clear cart store as well
+      const { setCart } = (await import('./useCartStore')).useCartStore.getState()
+      setCart(null)
       toast.success('Déconnexion réussie')
       window.location.href = '/'
     } catch (error) {

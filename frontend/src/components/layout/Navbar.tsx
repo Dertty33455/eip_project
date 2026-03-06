@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
+import {
   HiOutlineHome,
   HiOutlineBookOpen,
   HiOutlineMusicNote,
@@ -23,6 +23,7 @@ import {
 } from 'react-icons/hi'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/hooks/useCart'
 
 const navigation = [
   { name: 'Accueil', href: '/', icon: HiOutlineHome },
@@ -39,6 +40,7 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const { user, logout, isLoading } = useAuth()
+  const { itemCount } = useCart()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,11 +58,11 @@ export function Navbar() {
   }
 
   return (
-    <header 
+    <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-md' 
+        isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-md'
           : 'bg-transparent'
       )}
     >
@@ -82,7 +84,7 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || 
+              const isActive = pathname === item.href ||
                 (item.href !== '/' && pathname.startsWith(item.href))
               return (
                 <Link
@@ -91,8 +93,8 @@ export function Navbar() {
                   prefetch={true}
                   className={cn(
                     'flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                    isActive 
-                      ? 'bg-primary-100 text-primary-700' 
+                    isActive
+                      ? 'bg-primary-100 text-primary-700'
                       : 'text-earth-600 hover:bg-cream-100'
                   )}
                 >
@@ -106,7 +108,7 @@ export function Navbar() {
           {/* Right side actions */}
           <div className="flex items-center space-x-2">
             {/* Search */}
-            <button 
+            <button
               onClick={() => setShowSearch(true)}
               className="p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
             >
@@ -129,9 +131,14 @@ export function Navbar() {
                 <Link
                   href="/cart"
                   prefetch={true}
-                  className="hidden sm:flex p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
+                  className="hidden sm:flex relative p-2 rounded-lg text-earth-600 hover:bg-cream-100 transition-colors"
                 >
                   <HiOutlineShoppingCart className="w-5 h-5" />
+                  {itemCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-primary-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                      {itemCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* User Menu */}
@@ -142,8 +149,8 @@ export function Navbar() {
                   >
                     <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden">
                       {user.avatar ? (
-                        <Image 
-                          src={user.avatar} 
+                        <Image
+                          src={user.avatar}
                           alt={user.firstName}
                           width={32}
                           height={32}
@@ -284,8 +291,8 @@ export function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className={cn(
                       'flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-all',
-                      isActive 
-                        ? 'bg-primary-100 text-primary-700' 
+                      isActive
+                        ? 'bg-primary-100 text-primary-700'
                         : 'text-earth-600 hover:bg-cream-100'
                     )}
                   >
@@ -299,10 +306,17 @@ export function Navbar() {
                   <Link
                     href="/cart"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-earth-600 hover:bg-cream-100"
+                    className="flex items-center justify-between px-4 py-3 rounded-lg text-base font-medium text-earth-600 hover:bg-cream-100"
                   >
-                    <HiOutlineShoppingCart className="w-5 h-5" />
-                    <span>Panier</span>
+                    <div className="flex items-center space-x-3">
+                      <HiOutlineShoppingCart className="w-5 h-5" />
+                      <span>Panier</span>
+                    </div>
+                    {itemCount > 0 && (
+                      <span className="bg-primary-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {itemCount}
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/sell"
