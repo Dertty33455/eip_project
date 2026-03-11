@@ -83,6 +83,7 @@ module.exports = {
         'kente-pattern': "url('/patterns/kente.svg')",
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'hero-gradient': 'linear-gradient(135deg, #e88c2a 0%, #1b5e20 50%, #f9bc15 100%)',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -91,6 +92,13 @@ module.exports = {
         'scale-in': 'scaleIn 0.2s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'bounce-slow': 'bounce 2s infinite',
+        'shimmer': 'shimmer 1.8s ease-in-out infinite',
+        'gradient-shift': 'gradient-shift 4s ease-in-out infinite',
+        'float': 'float 4s ease-in-out infinite',
+        'float-rotate': 'float-rotate 5s ease-in-out infinite',
+        'float-delayed': 'float-delayed 6s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'spin-slow': 'spin 8s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -109,14 +117,49 @@ module.exports = {
           '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+        'gradient-shift': {
+          '0%, 100%': { backgroundPosition: '0% center' },
+          '50%': { backgroundPosition: '200% center' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-12px)' },
+        },
+        'float-rotate': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '25%': { transform: 'translateY(-8px) rotate(2deg)' },
+          '75%': { transform: 'translateY(-4px) rotate(-1deg)' },
+        },
+        'float-delayed': {
+          '0%, 100%': { transform: 'translateY(0) scale(1)' },
+          '50%': { transform: 'translateY(-16px) scale(1.02)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(232, 140, 42, 0.15)' },
+          '50%': { boxShadow: '0 0 40px rgba(232, 140, 42, 0.3), 0 0 60px rgba(232, 140, 42, 0.1)' },
+        },
       },
       boxShadow: {
         'african': '0 4px 20px -2px rgba(232, 140, 42, 0.25)',
-        'card': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        'card-hover': '0 10px 40px -10px rgba(232, 140, 42, 0.3)',
+        'african-lg': '0 8px 30px -4px rgba(232, 140, 42, 0.35)',
+        'card': '0 1px 3px -1px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 12px 40px -12px rgba(232, 140, 42, 0.2), 0 4px 16px -4px rgba(0, 0, 0, 0.06)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.04)',
+        'glow': '0 0 20px rgba(232, 140, 42, 0.2)',
+        'glow-lg': '0 0 40px rgba(232, 140, 42, 0.3)',
+        'inner-glow': 'inset 0 1px 2px rgba(232, 140, 42, 0.1)',
       },
       borderRadius: {
         'african': '1.5rem',
+        '4xl': '2rem',
+      },
+      transitionTimingFunction: {
+        'bounce-in': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
     },
   },

@@ -420,14 +420,17 @@ export default function BooksPage() {
   const displayBooks = books
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-cream-50/50">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">
+      <div className="bg-white border-b border-cream-200/60">
+        <div className="container mx-auto px-4 py-10">
+          <span className="inline-block px-4 py-1.5 bg-primary-50 text-primary-600 rounded-full text-sm font-semibold mb-4">
+            📖 Catalogue
+          </span>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-earth-900 mb-3">
             Tous les livres
           </h1>
-          <p className="text-gray-600">
+          <p className="text-earth-500 text-lg">
             Découvrez notre collection de livres africains et du monde entier
           </p>
         </div>
@@ -527,27 +530,27 @@ export default function BooksPage() {
                 }
               >
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="card animate-pulse">
+                  <div key={i} className="p-4 rounded-2xl bg-white border border-cream-200/80">
                     {view === 'grid' ? (
                       <>
-                        <div className="aspect-[3/4] bg-gray-200 rounded-lg mb-4" />
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                        <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
-                        <div className="h-4 bg-gray-200 rounded w-1/3" />
+                        <div className="aspect-[3/4] skeleton rounded-xl mb-4" />
+                        <div className="h-4 skeleton rounded-full w-3/4 mb-3" />
+                        <div className="h-3 skeleton rounded-full w-1/2 mb-3" />
+                        <div className="h-4 skeleton rounded-full w-1/3" />
                       </>
                     ) : (
                       <div className="flex gap-6">
-                        <div className="w-32 h-48 bg-gray-200 rounded-lg" />
+                        <div className="w-32 h-48 skeleton rounded-xl" />
                         <div className="flex-1">
-                          <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
-                          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
-                          <div className="h-3 bg-gray-200 rounded w-full mb-2" />
-                          <div className="h-3 bg-gray-200 rounded w-2/3" />
+                          <div className="h-5 skeleton rounded-full w-3/4 mb-3" />
+                          <div className="h-4 skeleton rounded-full w-1/2 mb-4" />
+                          <div className="h-3 skeleton rounded-full w-full mb-2" />
+                          <div className="h-3 skeleton rounded-full w-2/3" />
                         </div>
                       </div>
                     )}
                   </div>
-                ))}
+                ))}}
               </motion.div>
             ) : (
               <motion.div
@@ -571,7 +574,7 @@ export default function BooksPage() {
                 <button
                   onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
                   disabled={pagination.page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2.5 border border-cream-200 rounded-xl hover:bg-cream-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 text-earth-600 font-medium"
                 >
                   Précédent
                 </button>
@@ -580,9 +583,9 @@ export default function BooksPage() {
                   <button
                     key={i}
                     onClick={() => setPagination({ ...pagination, page: i + 1 })}
-                    className={`w-10 h-10 rounded-lg ${pagination.page === i + 1
-                      ? 'bg-primary text-white'
-                      : 'border border-gray-300 hover:bg-gray-50'
+                    className={`w-10 h-10 rounded-xl font-medium transition-all duration-200 ${pagination.page === i + 1
+                        ? 'bg-primary-500 text-white shadow-african'
+                        : 'border border-cream-200 hover:bg-cream-50 text-earth-600'
                       }`}
                   >
                     {i + 1}
@@ -592,7 +595,7 @@ export default function BooksPage() {
                 <button
                   onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
                   disabled={pagination.page === pagination.pages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2.5 border border-cream-200 rounded-xl hover:bg-cream-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 text-earth-600 font-medium"
                 >
                   Suivant
                 </button>

@@ -165,9 +165,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 sm:py-12 px-4 sm:px-6">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50/80 to-cream-100 py-8 sm:py-12 px-4 sm:px-6 relative overflow-hidden">
+      {/* Animated floating decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-[10%] w-64 h-64 bg-primary-200/20 rounded-full blur-[80px] animate-float" />
+        <div className="absolute bottom-20 right-[10%] w-48 h-48 bg-secondary-200/15 rounded-full blur-[60px] animate-float-delayed" />
+        <div className="absolute top-1/3 right-[20%] w-32 h-32 bg-accent-200/20 rounded-full blur-[50px] animate-pulse-slow" />
+      </div>
+
       {/* African Pattern Background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e88c2a' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
@@ -179,19 +186,24 @@ export default function RegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="card p-6 sm:p-8">
+        <div className="card-glass p-6 sm:p-8 shadow-xl border border-white/40">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <Link href="/" className="inline-block mb-4 sm:mb-6">
-              <span className="text-2xl sm:text-3xl font-display font-bold">
-                <span className="text-primary">Afri</span>
-                <span className="text-secondary">Book</span>
-              </span>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">B</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-display font-bold">
+                  <span className="text-primary-600">Book</span>
+                  <span className="text-secondary-600">Shell</span>
+                </span>
+              </div>
             </Link>
-            <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-earth-900 mb-2">
               Créer un compte
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-earth-500">
               Rejoignez la communauté des lecteurs africains
             </p>
           </div>

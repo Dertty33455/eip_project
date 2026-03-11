@@ -11,14 +11,14 @@ import { useAuth } from '@/hooks/useAuth'
 export default function LoginPage() {
   const router = useRouter()
   const { login, isLoading } = useAuth()
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -26,29 +26,29 @@ export default function LoginPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-  
+
   const validate = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!formData.email) {
       newErrors.email = 'Email ou téléphone requis'
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Mot de passe requis'
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validate()) return
-    
+
     const result = await login(formData.email, formData.password)
-    
+
     if (result.success) {
       router.push('/')
     }
@@ -59,39 +59,51 @@ export default function LoginPage() {
     const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     window.location.href = `${base}/api/auth/google/redirect`
   }
-  
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 sm:py-12 px-4 sm:px-6">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50/80 to-cream-100 py-8 sm:py-12 px-4 sm:px-6 relative overflow-hidden">
+      {/* Animated floating decorations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 right-[15%] w-72 h-72 bg-primary-200/20 rounded-full blur-[80px] animate-float" />
+        <div className="absolute bottom-32 left-[10%] w-56 h-56 bg-secondary-200/15 rounded-full blur-[60px] animate-float-delayed" />
+        <div className="absolute top-1/2 left-[30%] w-40 h-40 bg-accent-200/20 rounded-full blur-[50px] animate-pulse-slow" />
+      </div>
+
       {/* African Pattern Background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e88c2a' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }} />
       </div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="card p-6 sm:p-8">
+        <div className="card-glass p-6 sm:p-8 shadow-xl border border-white/40">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <Link href="/" className="inline-block mb-4 sm:mb-6">
-              <span className="text-2xl sm:text-3xl font-display font-bold">
-                <span className="text-primary">Book</span>
-                <span className="text-secondary">Shell</span>
-              </span>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">B</span>
+                </div>
+                <span className="text-2xl sm:text-3xl font-display font-bold">
+                  <span className="text-primary-600">Book</span>
+                  <span className="text-secondary-600">Shell</span>
+                </span>
+              </div>
             </Link>
-            <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl font-display font-bold text-earth-900 mb-2">
               Bon retour!
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-earth-500">
               Connectez-vous pour accéder à votre compte
             </p>
           </div>
-          
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Email/Phone */}
@@ -110,16 +122,15 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="email@exemple.com ou +225..."
-                  className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                    errors.email ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
               </div>
               {errors.email && (
                 <p className="mt-1 text-sm text-red-500">{errors.email}</p>
               )}
             </div>
-            
+
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -136,9 +147,8 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 <button
                   type="button"
@@ -156,7 +166,7 @@ export default function LoginPage() {
                 <p className="mt-1 text-sm text-red-500">{errors.password}</p>
               )}
             </div>
-            
+
             {/* Forgot Password */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <label className="flex items-center gap-2">
@@ -170,7 +180,7 @@ export default function LoginPage() {
                 Mot de passe oublié?
               </Link>
             </div>
-            
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -193,17 +203,17 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-          
+
           {/* Divider */}
           <div className="my-6 sm:my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-xs sm:text-sm text-gray-500">ou</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
-          
+
           {/* Social Login */}
           <div className="space-y-3">
-            <button 
+            <button
               type="button"
               onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
@@ -228,8 +238,8 @@ export default function LoginPage() {
               </svg>
               <span className="text-gray-700">Continuer avec Google</span>
             </button>
-            
-            <button 
+
+            <button
               type="button"
               className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm sm:text-base"
             >
@@ -237,7 +247,7 @@ export default function LoginPage() {
               <span className="text-gray-700">Connexion par SMS</span>
             </button>
           </div>
-          
+
           {/* Register Link */}
           <p className="mt-6 sm:mt-8 text-center text-sm sm:text-base text-gray-600">
             Pas encore de compte?{' '}

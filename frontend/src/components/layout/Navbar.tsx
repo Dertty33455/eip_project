@@ -63,14 +63,17 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md'
+          ? 'bg-white/80 backdrop-blur-xl shadow-sm border-b border-cream-200/50'
           : 'bg-transparent'
       )}
+      style={isScrolled ? {
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(232,140,42,0.04)'
+      } : undefined}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-18">
           {/* Logo */}
           <Link href="/" prefetch={true} className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
@@ -246,9 +249,9 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors shadow-african"
+                  className="px-5 py-2.5 text-sm font-semibold text-white bg-primary-500 rounded-xl hover:bg-primary-600 transition-all duration-300 shadow-african hover:shadow-african-lg hover:-translate-y-0.5"
                 >
-                  S'inscrire
+                  S&apos;inscrire
                 </Link>
               </div>
             )}
