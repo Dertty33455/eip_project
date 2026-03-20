@@ -68,3 +68,17 @@ temp/
 !/backend/storage/framework/testing/.gitignore
 !/backend/storage/framework/views/.gitignore
 !/backend/storage/logs/.gitignore
+
+# Django
+
+
+# Fichiers de migrations (à versionner sauf les fichiers __pycache__)
+migrations/
+!migrations/__init__.py
+!migrations/*.py
+!migrations/*.pyc
+
+
+# Fichiers de session et cache Django
+*.pyc
+__pycache__/

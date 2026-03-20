@@ -26,4 +26,7 @@ urlpatterns = [
     path("api/books/", include('books.urls')),
     path("api/categories/", include('categories.urls')),
     path("api/wallet/", include('wallet.urls')),
+    path("api/settings/", include('core_settings.urls')),
+    path("api/reports/", include('reports.urls')),
+    path("api/analytics/", include('analytics.urls')),
 ]

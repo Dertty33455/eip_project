@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     "books",
     "categories",
     "wallet",
+    "core_settings",
+    "reports",
+    "analytics",
 ]
 
 MIDDLEWARE = [
