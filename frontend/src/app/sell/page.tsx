@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiCamera, 
-  FiUpload, 
-  FiX, 
+import {
+  FiArrowLeft,
+  FiCamera,
+  FiUpload,
+  FiX,
   FiCheck,
   FiInfo,
   FiDollarSign,
@@ -40,13 +40,13 @@ export default function SellBookPage() {
   const router = useRouter()
   const { user } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [images, setImages] = useState<string[]>([])
   const [currentStep, setCurrentStep] = useState(1)
   const [showPriceGuide, setShowPriceGuide] = useState(false)
-  
+
   const [form, setForm] = useState({
     title: '',
     author: '',
@@ -74,7 +74,7 @@ export default function SellBookPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/categories`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/categories`)
       if (res.ok) {
         const data = await res.json()
         setCategories(data)
@@ -172,7 +172,7 @@ export default function SellBookPage() {
 
   const handleSubmit = async () => {
     if (!validateStep(3)) return
-    
+
     if (images.length === 0) {
       toast.error('Ajoutez au moins une photo du livre')
       return
@@ -197,7 +197,7 @@ export default function SellBookPage() {
         images: imageUrls
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/books`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/books`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookData)
@@ -227,7 +227,7 @@ export default function SellBookPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => router.back()}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -704,9 +704,9 @@ export default function SellBookPage() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {images.map((image, index) => (
                       <div key={index} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
-                        <img 
-                          src={image} 
-                          alt={`Photo ${index + 1}`} 
+                        <img
+                          src={image}
+                          alt={`Photo ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                         <button

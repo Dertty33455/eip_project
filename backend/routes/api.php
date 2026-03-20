@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\UserActivityController;
 use App\Http\Controllers\Api\PmfCohortController;
+use App\Http\Controllers\Api\AudioUploadController;
 
 // Placeholder login route to prevent RouteNotFoundException for API
 Route::get('/login', function () {
@@ -136,6 +137,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // audiobooks related management (protected)
     Route::post('audiobooks/{id}/related', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'store']);
     Route::delete('audiobooks/{id}/related/{relatedId}', [\App\Http\Controllers\Api\AudiobookRelationController::class, 'destroy']);
+
+    // audio preview management for books
+    Route::post('books/{id}/audio-preview', [AudioUploadController::class, 'uploadPreview']);
+    Route::delete('books/{id}/audio-preview', [AudioUploadController::class, 'deletePreview']);
+    Route::post('books/{id}/audio-preview/record', [AudioUploadController::class, 'recordPreview']);
 });
 
 // webhook endpoints (public)

@@ -160,7 +160,7 @@ export default function RegisterPage() {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500']
 
   const handleGoogleSignup = () => {
-    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
     window.location.href = `${base}/api/auth/google/redirect`
   }
 
@@ -221,7 +221,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} data-form-type="other" noValidate>
             {/* Step 1: Role Selection */}
             {step === 1 && (
               <motion.div
@@ -300,6 +300,9 @@ export default function RegisterPage() {
                       value={formData.firstName}
                       onChange={handleChange}
                       placeholder="Jean"
+                      autoComplete="given-name"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -320,6 +323,9 @@ export default function RegisterPage() {
                       value={formData.lastName}
                       onChange={handleChange}
                       placeholder="Dupont"
+                      autoComplete="family-name"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -345,6 +351,9 @@ export default function RegisterPage() {
                       value={formData.username}
                       onChange={handleChange}
                       placeholder="jean_dupont"
+                      autoComplete="username"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.username ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -401,6 +410,9 @@ export default function RegisterPage() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="email@exemple.com"
+                      autoComplete="email"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -426,6 +438,9 @@ export default function RegisterPage() {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+225 07 XX XX XX XX"
+                      autoComplete="tel"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full pl-12 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -451,6 +466,9 @@ export default function RegisterPage() {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
+                      autoComplete="new-password"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />
@@ -505,6 +523,9 @@ export default function RegisterPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
+                      autoComplete="new-password"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full pl-12 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                         }`}
                     />

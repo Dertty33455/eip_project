@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiHeart, 
-  FiBook, 
+import {
+  FiArrowLeft,
+  FiHeart,
+  FiBook,
   FiHeadphones,
   FiTrash2,
   FiShoppingCart,
@@ -79,8 +79,8 @@ export default function FavoritesPage() {
   const fetchFavorites = async () => {
     try {
       const [booksRes, audiobooksRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites?type=books`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites?type=audiobooks`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites?type=books`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites?type=audiobooks`)
       ])
 
       if (booksRes.ok) {
@@ -197,7 +197,7 @@ export default function FavoritesPage() {
 
   const removeFavoriteBook = async (favoriteId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favoriteId, type: 'book' })
@@ -214,7 +214,7 @@ export default function FavoritesPage() {
 
   const removeFavoriteAudiobook = async (favoriteId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favoriteId, type: 'audiobook' })
@@ -231,7 +231,7 @@ export default function FavoritesPage() {
 
   const addToCart = async (bookId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/cart`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/cart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookId, quantity: 1 })
@@ -267,12 +267,12 @@ export default function FavoritesPage() {
   }
 
   // Filter items based on search
-  const filteredBooks = favoriteBooks.filter(f => 
+  const filteredBooks = favoriteBooks.filter(f =>
     f.book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     f.book.author.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredAudiobooks = favoriteAudiobooks.filter(f => 
+  const filteredAudiobooks = favoriteAudiobooks.filter(f =>
     f.audiobook.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     f.audiobook.author.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -294,7 +294,7 @@ export default function FavoritesPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={() => router.back()}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -386,7 +386,7 @@ export default function FavoritesPage() {
                     {searchQuery ? 'Aucun résultat' : 'Pas encore de favoris'}
                   </h2>
                   <p className="text-gray-500 mb-6">
-                    {searchQuery 
+                    {searchQuery
                       ? 'Essayez avec d\'autres mots-clés'
                       : 'Explorez notre catalogue et ajoutez vos livres préférés'
                     }
@@ -531,7 +531,7 @@ export default function FavoritesPage() {
                     {searchQuery ? 'Aucun résultat' : 'Pas encore de favoris'}
                   </h2>
                   <p className="text-gray-500 mb-6">
-                    {searchQuery 
+                    {searchQuery
                       ? 'Essayez avec d\'autres mots-clés'
                       : 'Explorez notre catalogue et ajoutez vos audiobooks préférés'
                     }

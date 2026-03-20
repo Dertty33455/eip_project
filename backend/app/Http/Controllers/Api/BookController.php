@@ -77,6 +77,8 @@ class BookController extends Controller
             'country' => 'sometimes|string',
             'images' => 'sometimes|json',
             'cover_image' => 'sometimes|url',
+            'audio_preview' => 'sometimes|string',
+            'audio_duration' => 'sometimes|integer',
             'language' => 'sometimes|string',
             'published_year' => 'sometimes|integer',
             'pages' => 'sometimes|integer',
@@ -127,6 +129,8 @@ class BookController extends Controller
             'location' => 'sometimes|string',
             'city' => 'sometimes|string',
             'country' => 'sometimes|string',
+            'audio_preview' => 'sometimes|string',
+            'audio_duration' => 'sometimes|integer',
         ]);
 
         if ($validator->fails()) {

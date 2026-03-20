@@ -206,7 +206,7 @@ export function useAuth() {
 
   const updateProfile = async (data: Partial<User>) => {
     try {
-      const { data: result, error } = await api.patch('/api/auth/me', data)
+      const { data: result, error } = await api.patch('/api/auth/profile/', data)
       if (error) throw new Error(error)
 
       setUser(result.user)
@@ -220,7 +220,7 @@ export function useAuth() {
 
   const refreshWallet = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/wallet`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/wallet`)
       if (res.ok) {
         const data = await res.json()
         setWallet(data.wallet)

@@ -58,30 +58,12 @@ export function useApi<T = any>() {
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      // Laravel Sanctum requires a CSRF cookie for state-changing requests and
-      // also the request to include credentials so the cookie is sent back.
-      if (
-        options?.method &&
-        ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())
-      ) {
-        // ignore the response, we just need the cookie to be set
-        await fetch(`${API_BASE}/sanctum/csrf-cookie`, {
-          credentials: 'include',
-        })
-
-        // read the XSRF token cookie and attach as header for the next request
-        if (typeof document !== 'undefined') {
-          const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
-          if (match) {
-            headers['X-XSRF-TOKEN'] = decodeURIComponent(match[1])
-          }
-        }
-      }
-
+      // Django REST Framework doesn't require CSRF cookies like Laravel Sanctum
+      // Remove CSRF handling for Django backend
       const res = await fetch(fullUrl, {
         ...options,
         headers,
-        credentials: 'include', // send cookies for auth/session
+        // Django doesn't need credentials for JWT auth
       })
 
       const text = await res.text()
@@ -106,10 +88,14 @@ export function useApi<T = any>() {
         // Try to surface validation errors if provided
         let errorMessage = data.error || data.message || 'Une erreur est survenue'
         if (data.errors) {
-          // Laravel returns an object of arrays; join them into a single string
-          const flat = Object.values(data.errors).flat()
-          if (flat.length) {
-            errorMessage = flat.join(' ')
+          // Django returns validation errors as an object; join them into a single string
+          if (Array.isArray(data.errors)) {
+            errorMessage = data.errors.join(' ')
+          } else if (typeof data.errors === 'object') {
+            const flat = Object.values(data.errors).flat()
+            if (flat.length) {
+              errorMessage = flat.join(' ')
+            }
           }
         }
         setState({ data: null, error: errorMessage, isLoading: false })
@@ -196,15 +182,15 @@ export function useBooks() {
     }
     const { data, error } = await api.get(`/api/books?${searchParams.toString()}`)
 
-    // Transform Laravel pagination format to frontend format
+    // Transform Django pagination format to frontend format
     if (data && !error) {
       return {
         data: {
-          books: data.data || [],
+          books: data.results || [],
           pagination: {
-            page: data.current_page || 1,
-            total: data.total || 0,
-            pages: data.last_page || 1,
+            page: Math.ceil((data.previous ? parseInt(data.previous.split('page=')[1] || '1') : 1) + 1),
+            total: data.count || 0,
+            pages: Math.ceil((data.count || 0) / 20), // Assuming 20 per page
           }
         },
         error: null
@@ -218,21 +204,21 @@ export function useBooks() {
   }, [api])
 
   const createBook = useCallback(async (data: any) => {
-    return api.post('/api/books', data, {
+    return api.post('/api/books/create/', data, {
       showSuccessToast: true,
       successMessage: 'Livre ajouté avec succès!',
     })
   }, [api])
 
   const updateBook = useCallback(async (id: string, data: any) => {
-    return api.patch(`/api/books/${id}`, data, {
+    return api.patch(`/api/books/${id}/update/`, data, {
       showSuccessToast: true,
       successMessage: 'Livre mis à jour!',
     })
   }, [api])
 
   const deleteBook = useCallback(async (id: string) => {
-    return api.delete(`/api/books/${id}`, {
+    return api.delete(`/api/books/${id}/delete/`, {
       showSuccessToast: true,
       successMessage: 'Livre supprimé!',
     })
@@ -267,15 +253,15 @@ export function useAudiobooks() {
     }
     const { data, error } = await api.get(`/api/audiobooks?${searchParams.toString()}`)
 
-    // Transform Laravel pagination format to frontend format
+    // Transform Django pagination format to frontend format
     if (data && !error) {
       return {
         data: {
-          audiobooks: data.data || [],
+          audiobooks: data.results || [],
           pagination: {
-            page: data.current_page || 1,
-            total: data.total || 0,
-            pages: data.last_page || 1,
+            page: Math.ceil((data.previous ? parseInt(data.previous.split('page=')[1] || '1') : 1) + 1),
+            total: data.count || 0,
+            pages: Math.ceil((data.count || 0) / 20), // Assuming 20 per page
           }
         },
         error: null
@@ -350,15 +336,15 @@ export function usePosts() {
     }
     const { data, error } = await api.get(`/api/posts?${searchParams.toString()}`)
 
-    // Transform Laravel pagination format
+    // Transform Django pagination format
     if (data && !error) {
       return {
         data: {
-          posts: data.data || [],
+          posts: data.results || [],
           pagination: {
-            page: data.current_page || 1,
-            total: data.total || 0,
-            pages: data.last_page || 1,
+            page: Math.ceil((data.previous ? parseInt(data.previous.split('page=')[1] || '1') : 1) + 1),
+            total: data.count || 0,
+            pages: Math.ceil((data.count || 0) / 20), // Assuming 20 per page
           }
         },
         error: null

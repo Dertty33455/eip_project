@@ -11,30 +11,30 @@ export function useCart() {
     const { user } = useAuth()
     const { cart, setCart, isLoading, setIsLoading } = useCartStore()
 
-    const fetchCart = useCallback(async () => {
-        if (!user || isLoading) return
-        setIsLoading(true)
-        try {
-            const { data, error } = await get('/api/cart')
-            if (!error && data) {
-                setCart(data)
-            }
-        } catch (error) {
-            console.error('Error fetching cart:', error)
-        } finally {
-            setIsLoading(false)
-        }
-    }, [get, user, isLoading, setCart, setIsLoading])
+    // const fetchCart = useCallback(async () => {
+    //     if (!user) return
+    //     setIsLoading(true)
+    //     try {
+    //         const { data, error } = await get('/api/cart')
+    //         if (!error && data) {
+    //             setCart(data)
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching cart:', error)
+    //     } finally {
+    //         setIsLoading(false)
+    //     }
+    // }, [get, user, setCart, setIsLoading])
 
-    useEffect(() => {
-        if (!user) {
-            setCart(null)
-            return
-        }
-        if (!cart && !isLoading) {
-            fetchCart()
-        }
-    }, [fetchCart, user, cart, isLoading, setCart])
+    // useEffect(() => {
+    //     if (!user) {
+    //         setCart(null)
+    //         return
+    //     }
+    //     if (!cart && !isLoading) {
+    //         fetchCart()
+    //     }
+    // }, [fetchCart, user, cart, isLoading, setCart])
 
     const addToCart = async (bookId: string, quantity: number = 1) => {
         if (!user) {
@@ -93,7 +93,7 @@ export function useCart() {
     return {
         cart,
         isLoading,
-        refreshCart: fetchCart,
+        // refreshCart: fetchCart,
         addToCart,
         updateQuantity,
         removeItem,

@@ -1,0 +1,46 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.password_validation import validate_password
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    firstName = serializers.CharField(source='first_name', required=False)
+    lastName = serializers.CharField(source='last_name', required=False)
+    createdAt = serializers.DateTimeField(source='date_joined', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'email', 'phone', 'firstName', 'lastName', 'username',
+            'avatar', 'bio', 'location', 'country', 'role', 'status',
+            'isVerifiedSeller', 'isEmailVerified', 'isPhoneVerified',
+            'createdAt', 'updatedAt'
+        ]
+        read_only_fields = ['id', 'status', 'isVerifiedSeller', 'isEmailVerified', 'isPhoneVerified', 'createdAt', 'updatedAt']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    firstName = serializers.CharField(source='first_name', required=True)
+    lastName = serializers.CharField(source='last_name', required=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'firstName', 'lastName', 'username', 'phone', 'role']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            phone=validated_data.get('phone', ''),
+            role=validated_data.get('role', 'USER')
+        )
+        return user
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)

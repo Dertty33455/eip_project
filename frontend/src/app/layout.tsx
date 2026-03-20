@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import React from 'react'
 import { Inter, Playfair_Display } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
@@ -6,6 +7,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { NavigationProgress } from '@/components/ui/NavigationProgress'
+import { ErrorBoundaryHandler } from '@/components/ui/ErrorBoundaryHandler'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -39,10 +41,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+
   return (
     <html lang="fr" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         <AuthProvider>
+          <ErrorBoundaryHandler />
           <NavigationProgress />
           <Toaster 
             position="top-center"

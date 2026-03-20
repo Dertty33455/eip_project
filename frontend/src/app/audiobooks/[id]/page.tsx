@@ -135,7 +135,7 @@ export default function AudiobookDetailPage() {
 
   const fetchAudiobook = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/audiobooks/${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/audiobooks/${params.id}`)
       if (res.ok) {
         const data = await res.json()
 
@@ -198,7 +198,7 @@ export default function AudiobookDetailPage() {
   const checkFavorite = async () => {
     if (!user) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites/check?audiobookId=${params.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites/check?audiobookId=${params.id}`)
       if (res.ok) {
         const data = await res.json()
         setIsFavorite(data.isFavorite ?? data.is_favorite ?? false)
@@ -212,7 +212,7 @@ export default function AudiobookDetailPage() {
     requireAuth(async () => {
       try {
         const method = isFavorite ? 'DELETE' : 'POST'
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/favorites`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/favorites`, {
           method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ audiobookId: params.id })

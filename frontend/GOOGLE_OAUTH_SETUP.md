@@ -56,14 +56,14 @@
 
 > **Côté Laravel**
 > 1. Copiez les variables suivantes dans le `.env` de l'API (`/backend/.env`).
-> 2. Ajoutez également la redirection vers le frontend : 
+> 2. Ajoutez également la redirection vers le frontend :
 >
 > ```env
 > # Google OAuth (Laravel Socialite)
 > GOOGLE_CLIENT_ID="votre-client-id-ici"
 > GOOGLE_CLIENT_SECRET="votre-client-secret-ici"
-> GOOGLE_REDIRECT_URL="http://localhost:8000/api/auth/google/callback"
-> 
+> GOOGLE_REDIRECT_URL="http://localhost:8001/api/auth/google/callback"
+>
 > # (si vous utilisez sanctum/front-end, vérifiez aussi que SANCTUM_STATEFUL_DOMAINS inclut votre domaine)
 > ```
 >
@@ -73,7 +73,7 @@
 > 1. Assurez‑vous de définir l'URL de l'API dans `NEXT_PUBLIC_API_URL` :
 >
 > ```env
-> NEXT_PUBLIC_API_URL="http://localhost:8000"
+> NEXT_PUBLIC_API_URL="http://localhost:8001"
 > ```
 >
 > 2. Nous avons créé une page client `/auth/callback` qui lit le token reçu en query

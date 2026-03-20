@@ -23,6 +23,8 @@ class Book extends Model
         'country',
         'images',
         'cover_image',
+        'audio_preview',
+        'audio_duration',
         'rating',
         'review_count',
         'language',
@@ -46,6 +48,8 @@ class Book extends Model
         'pageCount',
         'originalPrice',
         'stock',
+        'audioPreview',
+        'audioDuration',
     ];
 
     /**
@@ -118,6 +122,22 @@ class Book extends Model
     public function getStockAttribute()
     {
         return $this->attributes['quantity'] ?? 0;
+    }
+
+    /**
+     * Get the book's audio preview URL in camelCase format.
+     */
+    public function getAudioPreviewAttribute()
+    {
+        return $this->attributes['audio_preview'] ?? null;
+    }
+
+    /**
+     * Get the book's audio duration in camelCase format.
+     */
+    public function getAudioDurationAttribute()
+    {
+        return $this->attributes['audio_duration'] ?? null;
     }
 
     /**

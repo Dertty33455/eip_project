@@ -126,7 +126,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/${params.username}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}`)
       if (res.ok) {
         const data = await res.json()
         setProfile(data)
@@ -146,7 +146,7 @@ export default function ProfilePage() {
 
   const checkFollowStatus = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/${params.username}/follow/check`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}/follow/check`)
       if (res.ok) {
         const data = await res.json()
         setIsFollowing(data.isFollowing)
@@ -160,7 +160,7 @@ export default function ProfilePage() {
     requireAuth(async () => {
       try {
         const method = isFollowing ? 'DELETE' : 'POST'
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/${params.username}/follow`, { method })
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}/follow`, { method })
 
         if (res.ok) {
           setIsFollowing(!isFollowing)

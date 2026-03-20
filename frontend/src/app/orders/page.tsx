@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FiArrowLeft, 
-  FiPackage, 
+import {
+  FiArrowLeft,
+  FiPackage,
   FiTruck,
   FiCheck,
   FiClock,
@@ -58,32 +58,32 @@ interface Order {
 }
 
 const statusConfig = {
-  PENDING: { 
-    label: 'En attente', 
+  PENDING: {
+    label: 'En attente',
     color: 'bg-yellow-100 text-yellow-800',
     icon: FiClock,
     description: 'Votre commande est en cours de traitement'
   },
-  CONFIRMED: { 
-    label: 'Confirmée', 
+  CONFIRMED: {
+    label: 'Confirmée',
     color: 'bg-blue-100 text-blue-800',
     icon: FiCheck,
     description: 'Votre commande a été confirmée par le vendeur'
   },
-  SHIPPED: { 
-    label: 'Expédiée', 
+  SHIPPED: {
+    label: 'Expédiée',
     color: 'bg-purple-100 text-purple-800',
     icon: FiTruck,
     description: 'Votre commande est en cours de livraison'
   },
-  DELIVERED: { 
-    label: 'Livrée', 
+  DELIVERED: {
+    label: 'Livrée',
     color: 'bg-green-100 text-green-800',
     icon: FiCheck,
     description: 'Votre commande a été livrée'
   },
-  CANCELLED: { 
-    label: 'Annulée', 
+  CANCELLED: {
+    label: 'Annulée',
     color: 'bg-red-100 text-red-800',
     icon: FiX,
     description: 'Cette commande a été annulée'
@@ -114,7 +114,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/orders`)
       if (res.ok) {
         const data = await res.json()
         setOrders(data)
@@ -225,12 +225,12 @@ export default function OrdersPage() {
 
   const cancelOrder = async (orderId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/orders/${orderId}/cancel`, {
         method: 'POST'
       })
 
       if (res.ok || true) { // Demo
-        setOrders(prev => prev.map(o => 
+        setOrders(prev => prev.map(o =>
           o.id === orderId ? { ...o, status: 'CANCELLED' as const } : o
         ))
         toast.success('Commande annulée')
@@ -243,9 +243,9 @@ export default function OrdersPage() {
 
   const submitReview = async () => {
     if (!reviewOrder) return
-    
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/orders/${reviewOrder.id}/review`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/orders/${reviewOrder.id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating: reviewRating, comment: reviewComment })
@@ -286,8 +286,8 @@ export default function OrdersPage() {
   }
 
   // Filter orders
-  const filteredOrders = filterStatus === 'ALL' 
-    ? orders 
+  const filteredOrders = filterStatus === 'ALL'
+    ? orders
     : orders.filter(o => o.status === filterStatus)
 
   if (!user) return null
@@ -306,7 +306,7 @@ export default function OrdersPage() {
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
@@ -360,7 +360,7 @@ export default function OrdersPage() {
               Aucune commande
             </h2>
             <p className="text-gray-500 mb-6">
-              {filterStatus === 'ALL' 
+              {filterStatus === 'ALL'
                 ? 'Vous n\'avez pas encore passé de commande'
                 : 'Aucune commande dans cette catégorie'
               }
@@ -378,7 +378,7 @@ export default function OrdersPage() {
             {filteredOrders.map((order) => {
               const status = statusConfig[order.status]
               const StatusIcon = status.icon
-              
+
               return (
                 <motion.div
                   key={order.id}
@@ -410,7 +410,7 @@ export default function OrdersPage() {
                             <FiBook className="w-6 h-6 text-primary/20" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <Link 
+                            <Link
                               href={`/books/${item.book.id}`}
                               className="font-medium text-gray-800 hover:text-primary transition-colors"
                             >
