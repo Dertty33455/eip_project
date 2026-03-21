@@ -38,15 +38,15 @@ function PostCard({ post, onLike, onComment, onShare }: {
   const [showComments, setShowComments] = useState(false)
   const [commentText, setCommentText] = useState('')
   // Calculate if user has liked this post
-  const [isLiked, setIsLiked] = useState(post.likes?.some((like: any) => like.user_id === user?.id) || false)
-  const [likesCount, setLikesCount] = useState(post._count?.likes || post.likes?.length || 0)
+  const [isLiked, setIsLiked] = useState(post.isLiked ?? (post.likes?.some((like: any) => like.user_id === user?.id) || false))
+  const [likesCount, setLikesCount] = useState(post._count?.likes ?? post.likesCount ?? post.likes?.length ?? 0)
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [likeLoading, setLikeLoading] = useState(false)
 
   // Update like status when user or post changes
   useEffect(() => {
-    setIsLiked(post.likes?.some((like: any) => like.user_id === user?.id) || false)
-  }, [post.likes, user?.id])
+    setIsLiked(post.isLiked ?? (post.likes?.some((like: any) => like.user_id === user?.id) || false))
+  }, [post.likes, post.isLiked, user?.id])
   const handleLike = async (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
@@ -198,8 +198,8 @@ function PostCard({ post, onLike, onComment, onShare }: {
       {/* Stats */}
       <div className="flex items-center gap-6 text-sm text-gray-500 pb-4 border-b">
         <span>{likesCount} j'aime</span>
-        <span>{post._count?.comments || 0} commentaires</span>
-        <span>{post._count?.shares || 0} partages</span>
+        <span>{post._count?.comments ?? post.commentsCount ?? 0} commentaires</span>
+        <span>{post._count?.shares ?? post.sharesCount ?? 0} partages</span>
       </div>
 
       {/* Actions */}
@@ -480,7 +480,7 @@ export default function CommunityPage() {
     if (data?.comment) {
       setPosts(posts.map(p =>
         p.id === postId
-          ? { ...p, comments: [...(p.comments || []), data.comment], _count: { ...p._count, comments: (p._count?.comments || 0) + 1 } }
+          ? { ...p, comments: [...(p.comments || []), data.comment], commentsCount: (p.commentsCount || p._count?.comments || 0) + 1, _count: { ...p._count, comments: (p._count?.comments || p.commentsCount || 0) + 1 } }
           : p
       ))
     }

@@ -29,4 +29,5 @@ urlpatterns = [
     path("api/settings/", include('core_settings.urls')),
     path("api/reports/", include('reports.urls')),
     path("api/analytics/", include('analytics.urls')),
+    path("api/social/", include('social.urls')),
 ]
