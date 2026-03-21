@@ -92,11 +92,11 @@ import os
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "BookShell"),
-        "USER": os.environ.get("POSTGRES_USER", "BookShell"),
+        "NAME": os.environ.get("POSTGRES_DB", "bookshell_db"),
+        "USER": os.environ.get("POSTGRES_USER", "bookshell"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
         "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5433"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
 
