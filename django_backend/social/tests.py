@@ -299,27 +299,27 @@ class FollowTests(SocialTestMixin, APITestCase):
 
     def test_follow_user(self):
         self.auth(self.alice)
-        response = self.client.post(reverse("follow-toggle", args=[self.bob.pk]))
+        response = self.client.post(reverse("follow-toggle", args=[self.bob.username]))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data["following"])
         self.assertEqual(response.data["followers_count"], 1)
 
     def test_unfollow_user(self):
         self.auth(self.alice)
-        self.client.post(reverse("follow-toggle", args=[self.bob.pk]))
-        response = self.client.post(reverse("follow-toggle", args=[self.bob.pk]))
+        self.client.post(reverse("follow-toggle", args=[self.bob.username]))
+        response = self.client.post(reverse("follow-toggle", args=[self.bob.username]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.data["following"])
         self.assertEqual(response.data["followers_count"], 0)
 
     def test_cannot_follow_self(self):
         self.auth(self.alice)
-        response = self.client.post(reverse("follow-toggle", args=[self.alice.pk]))
+        response = self.client.post(reverse("follow-toggle", args=[self.alice.username]))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_followers_list(self):
         Follow.objects.create(follower=self.alice, following=self.bob)
-        response = self.client.get(reverse("follower-list", args=[self.bob.pk]))
+        response = self.client.get(reverse("follower-list", args=[self.bob.username]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(
@@ -328,7 +328,7 @@ class FollowTests(SocialTestMixin, APITestCase):
 
     def test_following_list(self):
         Follow.objects.create(follower=self.alice, following=self.bob)
-        response = self.client.get(reverse("following-list", args=[self.alice.pk]))
+        response = self.client.get(reverse("following-list", args=[self.alice.username]))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(
@@ -337,7 +337,7 @@ class FollowTests(SocialTestMixin, APITestCase):
 
     def test_follow_creates_notification(self):
         self.auth(self.alice)
-        self.client.post(reverse("follow-toggle", args=[self.bob.pk]))
+        self.client.post(reverse("follow-toggle", args=[self.bob.username]))
         notif = Notification.objects.filter(user=self.bob, type="FOLLOW")
         self.assertEqual(notif.count(), 1)
         self.assertIn("alice", notif.first().message)

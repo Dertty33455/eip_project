@@ -229,13 +229,26 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ─── Follow views ───────────────────────────────────────────────────────
 
+class FollowCheckView(views.APIView):
+    """GET (auth): check if current user follows the target user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        target_user = get_object_or_404(User, username=username)
+        is_following = Follow.objects.filter(
+            follower=request.user, following=target_user
+        ).exists()
+        return Response({"isFollowing": is_following})
+
+
 class FollowToggleView(views.APIView):
     """POST: follow or unfollow a user (toggle)."""
 
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, pk):
-        target_user = get_object_or_404(User, pk=pk)
+    def post(self, request, username):
+        target_user = get_object_or_404(User, username=username)
 
         if request.user == target_user:
             return Response(
@@ -270,8 +283,8 @@ class FollowerListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        user_pk = self.kwargs["pk"]
-        return Follow.objects.filter(following_id=user_pk).select_related(
+        username = self.kwargs["username"]
+        return Follow.objects.filter(following__username=username).select_related(
             "follower", "following"
         )
 
@@ -283,8 +296,8 @@ class FollowingListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        user_pk = self.kwargs["pk"]
-        return Follow.objects.filter(follower_id=user_pk).select_related(
+        username = self.kwargs["username"]
+        return Follow.objects.filter(follower__username=username).select_related(
             "follower", "following"
         )
 

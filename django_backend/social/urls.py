@@ -9,6 +9,7 @@ from .views import (
     CommentListView,
     CommentDetailView,
     FollowToggleView,
+    FollowCheckView,
     FollowerListView,
     FollowingListView,
     UserFeedView,
@@ -27,9 +28,10 @@ urlpatterns = [
     path("comments/<uuid:pk>/", CommentDetailView.as_view(), name="comment-detail"),
 
     # Follows
-    path("users/<uuid:pk>/follow/", FollowToggleView.as_view(), name="follow-toggle"),
-    path("users/<uuid:pk>/followers/", FollowerListView.as_view(), name="follower-list"),
-    path("users/<uuid:pk>/following/", FollowingListView.as_view(), name="following-list"),
+    path("users/<str:username>/follow/", FollowToggleView.as_view(), name="follow-toggle"),
+    path("users/<str:username>/follow/check/", FollowCheckView.as_view(), name="follow-check"),
+    path("users/<str:username>/followers/", FollowerListView.as_view(), name="follower-list"),
+    path("users/<str:username>/following/", FollowingListView.as_view(), name="following-list"),
 
     # Feed
     path("feed/", UserFeedView.as_view(), name="user-feed"),

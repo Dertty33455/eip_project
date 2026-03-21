@@ -32,6 +32,7 @@ import {
 } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/hooks/useAuth'
+import { useApi } from '@/hooks/useApi'
 
 interface UserProfile {
   id: string
@@ -108,6 +109,7 @@ export default function ProfilePage() {
   const params = useParams()
   const router = useRouter()
   const { user: currentUser, requireAuth } = useAuth()
+  const api = useApi()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
@@ -126,14 +128,11 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}`)
-      if (res.ok) {
-        const data = await res.json()
+      const { data, error } = await api.get(`/api/users/${params.username}`)
+      if (data && !error) {
         setProfile(data)
-      } else if (res.status === 404) {
-        setProfile(null)
       } else {
-        console.error('Unexpected response fetching profile:', res.status)
+        console.error('Unexpected response fetching profile:', error)
         setProfile(null)
       }
     } catch (error) {
@@ -146,9 +145,8 @@ export default function ProfilePage() {
 
   const checkFollowStatus = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}/follow/check`)
-      if (res.ok) {
-        const data = await res.json()
+      const { data, error } = await api.get(`/api/social/users/${params.username}/follow/check/`)
+      if (data && !error) {
         setIsFollowing(data.isFollowing)
       }
     } catch (error) {
@@ -159,10 +157,9 @@ export default function ProfilePage() {
   const toggleFollow = async () => {
     requireAuth(async () => {
       try {
-        const method = isFollowing ? 'DELETE' : 'POST'
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/users/${params.username}/follow`, { method })
+        const { data, error } = await api.post(`/api/social/users/${params.username}/follow/`, {})
 
-        if (res.ok) {
+        if (data && !error) {
           setIsFollowing(!isFollowing)
           setProfile(prev => prev ? {
             ...prev,
@@ -172,6 +169,8 @@ export default function ProfilePage() {
             }
           } : null)
           toast.success(isFollowing ? 'Vous ne suivez plus cet utilisateur' : 'Vous suivez maintenant cet utilisateur')
+        } else {
+          toast.error('Erreur lors de la mise à jour')
         }
       } catch (error) {
         toast.error('Erreur lors de la mise à jour')

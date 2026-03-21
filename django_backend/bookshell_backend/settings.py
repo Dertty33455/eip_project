@@ -94,7 +94,7 @@ DATABASES = {
         "USER": os.environ.get("POSTGRES_USER", "BookShell"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
         "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5433"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
 
