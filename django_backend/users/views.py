@@ -3,7 +3,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
-from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from .serializers import UserSerializer, RegisterSerializer, LoginSerializer, SubscriptionSerializer
+from django.utils import timezone
+from datetime import timedelta
+from wallet.models import Wallet, Transaction
+from .models import Subscription
 
 User = get_user_model()
 
@@ -58,10 +62,19 @@ class MeView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        sub_data = None
+        if hasattr(request.user, 'subscription'):
+            sub = request.user.subscription
+            if sub.status == 'ACTIVE' and sub.end_date < timezone.now():
+                sub.status = 'EXPIRED'
+                sub.save()
+            if sub.status == 'ACTIVE':
+                sub_data = SubscriptionSerializer(sub).data
+
         # The frontend expects { "user": User, "subscription": Subscription | null }
         return Response({
             'user': UserSerializer(request.user).data,
-            'subscription': None,
+            'subscription': sub_data,
         })
         
 class ProfileUpdateView(generics.UpdateAPIView):
@@ -88,3 +101,66 @@ class LogoutView(views.APIView):
         # We can blacklist tokens if rest_framework_simplejwt.token_blacklist is installed
         # But for now, we just return a 200 OM
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+class SubscriptionView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if hasattr(request.user, 'subscription') and request.user.subscription.status == 'ACTIVE':
+            return Response(SubscriptionSerializer(request.user.subscription).data)
+        return Response(None)
+
+    def post(self, request):
+        data = request.data
+        plan = data.get('plan')
+        provider = data.get('provider')
+        phone_number = data.get('phoneNumber')
+
+        plan_prices = {'MONTHLY': 2500, 'QUARTERLY': 6000, 'YEARLY': 20000}
+        plan_days = {'MONTHLY': 30, 'QUARTERLY': 90, 'YEARLY': 365}
+
+        if plan not in plan_prices:
+             return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
+
+        price = plan_prices[plan]
+        days = plan_days[plan]
+
+        try:
+            wallet = Wallet.objects.get(user=request.user)
+        except Wallet.DoesNotExist:
+            wallet = Wallet.objects.create(user=request.user)
+
+        if provider == 'WALLET':
+            if wallet.balance < price:
+                return Response({'error': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
+            wallet.balance -= price
+            wallet.save()
+
+        # Create Transaction
+        Transaction.objects.create(
+            wallet=wallet,
+            reference=f"SUB-{request.user.id}-{int(timezone.now().timestamp())}",
+            type='SUBSCRIPTION',
+            amount=price,
+            status='COMPLETED',
+            description=f"Abonnement {plan}",
+            payment_method=provider if provider else 'UNKNOWN'
+        )
+
+        end_date = timezone.now() + timedelta(days=days)
+
+        if hasattr(request.user, 'subscription'):
+            sub = request.user.subscription
+            sub.plan = plan
+            sub.status = 'ACTIVE'
+            sub.end_date = end_date
+            sub.save()
+        else:
+            sub = Subscription.objects.create(
+                user=request.user,
+                plan=plan,
+                status='ACTIVE',
+                end_date=end_date
+            )
+
+        return Response(SubscriptionSerializer(sub).data, status=status.HTTP_201_CREATED)

@@ -39,6 +39,7 @@ class Transaction(models.Model):
         ('REFUND', 'Refund'),
         ('COMMISSION', 'Commission'),
         ('BONUS', 'Bonus'),
+        ('SUBSCRIPTION', 'Subscription'),
     )
     
     STATUS_CHOICES = (
