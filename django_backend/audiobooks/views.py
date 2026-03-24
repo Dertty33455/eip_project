@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg, Count
-from .models import Audiobook, AudiobookProgress, AudiobookRating
+from .models import Audiobook, AudioChapter, AudiobookProgress, AudiobookRating
 from .serializers import (
     AudiobookSerializer, AudiobookCreateSerializer,
+    AudioChapterSerializer, AudioChapterCreateUpdateSerializer,
     AudiobookProgressSerializer, AudiobookRatingSerializer,
     AudiobookRatingCreateSerializer
 )
@@ -110,3 +111,76 @@ class FeaturedAudiobooksView(generics.ListAPIView):
     
     def get_queryset(self):
         return Audiobook.objects.all().order_by('-created_at')[:10]
+
+
+# ============================================================================
+# AudioChapter Views - Manage chapters for audiobooks
+# ============================================================================
+
+class AudioChapterListView(generics.ListAPIView):
+    """
+    List all chapters for a specific audiobook.
+    """
+    serializer_class = AudioChapterSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        audiobook_id = self.kwargs['audiobook_id']
+        return AudioChapter.objects.filter(audiobook_id=audiobook_id).order_by('chapter_number')
+
+
+class AudioChapterDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a specific chapter.
+    """
+    queryset = AudioChapter.objects.all()
+    serializer_class = AudioChapterSerializer
+    permission_classes = [AllowAny]
+
+
+class AudioChapterCreateView(generics.CreateAPIView):
+    """
+    Create a new chapter for an audiobook.
+    Requires authentication.
+    """
+    serializer_class = AudioChapterCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AudioChapterUpdateView(generics.UpdateAPIView):
+    """
+    Update an existing chapter.
+    Requires authentication.
+    """
+    queryset = AudioChapter.objects.all()
+    serializer_class = AudioChapterCreateUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AudioChapterDeleteView(generics.DestroyAPIView):
+    """
+    Delete a chapter.
+    Requires authentication.
+    """
+    queryset = AudioChapter.objects.all()
+    serializer_class = AudioChapterSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class AudioChapterProgressView(generics.RetrieveUpdateAPIView):
+    """
+    Get or update progress for a specific chapter.
+    """
+    serializer_class = AudiobookProgressSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        chapter_id = self.kwargs['chapter_id']
+        user = self.request.user
+        progress, created = AudiobookProgress.objects.get_or_create(
+            user=user,
+            chapter_id=chapter_id,
+            defaults={'current_position': 0, 'is_completed': False}
+        )
+        return progress
+

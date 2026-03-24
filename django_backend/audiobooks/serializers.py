@@ -1,5 +1,43 @@
 from rest_framework import serializers
-from .models import Audiobook, AudiobookProgress, AudiobookRating
+from .models import Audiobook, AudioChapter, AudiobookProgress, AudiobookRating
+
+
+class AudioChapterSerializer(serializers.ModelSerializer):
+    """
+    Serializer for AudioChapter model.
+    Represents a single chapter of an audiobook.
+    """
+    audioBookId = serializers.PrimaryKeyRelatedField(
+        source='audiobook',
+        queryset=Audiobook.objects.all(),
+        write_only=True
+    )
+    durationMinutes = serializers.IntegerField(source='duration_minutes', read_only=True)
+    audioUrl = serializers.URLField(source='audio_url', read_only=True)
+    chapterNumber = serializers.IntegerField(source='chapter_number', read_only=True)
+    isFree = serializers.BooleanField(source='is_free', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    
+    class Meta:
+        model = AudioChapter
+        fields = [
+            'id', 'audioBookId', 'title', 'chapterNumber', 'durationMinutes',
+            'audioUrl', 'isFree', 'createdAt', 'updatedAt'
+        ]
+
+
+class AudioChapterCreateUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and updating AudioChapter instances.
+    """
+    class Meta:
+        model = AudioChapter
+        fields = [
+            'audiobook', 'title', 'chapter_number', 'duration_minutes',
+            'audio_url', 'is_free'
+        ]
+
 
 class AudiobookSerializer(serializers.ModelSerializer):
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
@@ -15,6 +53,7 @@ class AudiobookSerializer(serializers.ModelSerializer):
     totalDownloads = serializers.IntegerField(source='total_downloads', read_only=True)
     averageRating = serializers.DecimalField(source='average_rating', max_digits=3, decimal_places=2, read_only=True)
     ratingCount = serializers.IntegerField(source='rating_count', read_only=True)
+    chapters = AudioChapterSerializer(many=True, read_only=True)
     
     class Meta:
         model = Audiobook
@@ -23,7 +62,7 @@ class AudiobookSerializer(serializers.ModelSerializer):
             'duration_minutes', 'fileSize', 'coverImage', 'audioFileUrl', 'sampleAudioUrl',
             'price', 'isFree', 'isPremium', 'publisher', 'publishedDate', 'isbn',
             'totalPlays', 'totalDownloads', 'averageRating', 'ratingCount',
-            'createdAt', 'updatedAt'
+            'chapters', 'createdAt', 'updatedAt'
         ]
 
 class AudiobookCreateSerializer(serializers.ModelSerializer):
@@ -37,13 +76,14 @@ class AudiobookCreateSerializer(serializers.ModelSerializer):
 
 class AudiobookProgressSerializer(serializers.ModelSerializer):
     audiobook = AudiobookSerializer(read_only=True)
+    chapter = AudioChapterSerializer(read_only=True)
     lastPlayedAt = serializers.DateTimeField(source='last_played_at', read_only=True)
     currentPosition = serializers.IntegerField(source='current_position', read_only=True)
     isCompleted = serializers.BooleanField(source='is_completed', read_only=True)
     
     class Meta:
         model = AudiobookProgress
-        fields = ['id', 'audiobook', 'currentPosition', 'isCompleted', 'lastPlayedAt']
+        fields = ['id', 'audiobook', 'chapter', 'currentPosition', 'isCompleted', 'lastPlayedAt']
 
 class AudiobookRatingSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)

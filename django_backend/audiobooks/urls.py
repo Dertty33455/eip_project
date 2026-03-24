@@ -3,7 +3,9 @@ from .views import (
     AudiobookListView, AudiobookDetailView, AudiobookCreateView,
     AudiobookUpdateView, AudiobookDeleteView, AudiobookProgressView,
     AudiobookPlayView, AudiobookRatingListView, AudiobookRatingCreateView,
-    UserAudiobooksView, FeaturedAudiobooksView
+    UserAudiobooksView, FeaturedAudiobooksView,
+    AudioChapterListView, AudioChapterDetailView, AudioChapterCreateView,
+    AudioChapterUpdateView, AudioChapterDeleteView, AudioChapterProgressView
 )
 
 urlpatterns = [
@@ -23,4 +25,14 @@ urlpatterns = [
     # Audiobook ratings
     path('<uuid:audiobook_id>/ratings/', AudiobookRatingListView.as_view(), name='audiobook-ratings'),
     path('<uuid:audiobook_id>/ratings/create/', AudiobookRatingCreateView.as_view(), name='audiobook-rating-create'),
+    
+    # Chapter management
+    path('<uuid:audiobook_id>/chapters/', AudioChapterListView.as_view(), name='audiobook-chapters-list'),
+    path('chapter/<int:pk>/', AudioChapterDetailView.as_view(), name='chapter-detail'),
+    path('chapter/create/', AudioChapterCreateView.as_view(), name='chapter-create'),
+    path('chapter/<int:pk>/update/', AudioChapterUpdateView.as_view(), name='chapter-update'),
+    path('chapter/<int:pk>/delete/', AudioChapterDeleteView.as_view(), name='chapter-delete'),
+    
+    # Chapter progress and playback
+    path('chapter/<int:chapter_id>/progress/', AudioChapterProgressView.as_view(), name='chapter-progress'),
 ]

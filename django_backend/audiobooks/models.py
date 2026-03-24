@@ -74,18 +74,53 @@ class Audiobook(models.Model):
     def __str__(self):
         return f"{self.title} by {self.author}"
 
+
+class AudioChapter(models.Model):
+    """
+    Represents a single chapter/segment of an audiobook.
+    Allows breaking down an audiobook into multiple chapters with individual audio files.
+    """
+    audiobook = models.ForeignKey(Audiobook, on_delete=models.CASCADE, related_name='chapters')
+    title = models.CharField(max_length=255)
+    chapter_number = models.IntegerField()
+    duration_minutes = models.IntegerField(help_text="Duration in minutes")
+    audio_url = models.URLField(max_length=500)
+    is_free = models.BooleanField(default=False, help_text="Make this chapter free for all users")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['chapter_number']
+        unique_together = ['audiobook', 'chapter_number']
+    
+    def __str__(self):
+        return f"{self.audiobook.title} - Chapter {self.chapter_number}: {self.title}"
+    
+    def save(self, *args, **kwargs):
+        """
+        Override save to ensure the first chapter is always free.
+        """
+        if self.chapter_number <= 1:
+            self.is_free = True
+        super().save(*args, **kwargs)
+
+
 class AudiobookProgress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audiobook_progress')
     audiobook = models.ForeignKey(Audiobook, on_delete=models.CASCADE, related_name='user_progress')
+    chapter = models.ForeignKey(AudioChapter, on_delete=models.SET_NULL, null=True, blank=True, related_name='user_progress', help_text="Specific chapter being played (optional)")
     current_position = models.IntegerField(default=0, help_text="Current position in seconds")
     is_completed = models.BooleanField(default=False)
     last_played_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['user', 'audiobook']
+        unique_together = ['user', 'audiobook', 'chapter']
     
     def __str__(self):
-        return f"{self.user.username} - {self.audiobook.title}"
+        chapter_str = f" - {self.chapter.title}" if self.chapter else ""
+        return f"{self.user.username} - {self.audiobook.title}{chapter_str}"
 
 class AudiobookRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='audiobook_ratings')

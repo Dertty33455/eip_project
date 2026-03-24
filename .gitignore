@@ -68,3 +68,10 @@ temp/
 !/backend/storage/framework/testing/.gitignore
 !/backend/storage/framework/views/.gitignore
 !/backend/storage/logs/.gitignore
+
+
+
+
+
+*.pyc
+__pycache__/
