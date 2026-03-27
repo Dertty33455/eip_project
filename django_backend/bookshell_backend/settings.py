@@ -88,12 +88,8 @@ import os
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "BookShell"),
-        "USER": os.environ.get("POSTGRES_USER", "BookShell"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5433"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
