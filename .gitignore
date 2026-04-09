@@ -69,6 +69,7 @@ temp/
 !/backend/storage/framework/views/.gitignore
 !/backend/storage/logs/.gitignore
 
+<<<<<<< HEAD
 # Django
 
 
@@ -82,3 +83,11 @@ migrations/
 # Fichiers de session et cache Django
 *.pyc
 __pycache__/
+=======
+
+
+
+
+*.pyc
+__pycache__/
+>>>>>>> origin/Juao
