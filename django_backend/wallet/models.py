@@ -143,3 +143,39 @@ class WithdrawalRequest(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - Withdrawal {self.amount}"
+
+
+class SubscriptionPricing(models.Model):
+    PLAN_CHOICES = (
+        ('MONTHLY', 'Monthly'),
+        ('QUARTERLY', 'Quarterly'),
+        ('YEARLY', 'Yearly'),
+    )
+    
+    CURRENCY_CHOICES = (
+        ('XOF', 'West African CFA Franc'),
+        ('USD', 'US Dollar'),
+        ('EUR', 'Euro'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, unique=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='XOF')
+    
+    # Features included
+    duration_days = models.IntegerField(help_text="Duration in days")
+    description = models.TextField(blank=True)
+    features = models.JSONField(default=list, blank=True, help_text="List of features included")
+    
+    is_active = models.BooleanField(default=True)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['duration_days']
+    
+    def __str__(self):
+        return f"{self.plan} - {self.currency} {self.price}"

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from decimal import Decimal
-from .models import Wallet, Transaction, PaymentMethod, WithdrawalRequest
+from .models import Wallet, Transaction, PaymentMethod, WithdrawalRequest, SubscriptionPricing
 
 User = get_user_model()
 
@@ -113,3 +113,16 @@ class PaymentSerializer(serializers.Serializer):
     description = serializers.CharField(required=False, allow_blank=True)
     book_id = serializers.UUIDField(required=False, allow_null=True)
     audiobook_id = serializers.UUIDField(required=False, allow_null=True)
+
+
+class SubscriptionPricingSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    
+    class Meta:
+        model = SubscriptionPricing
+        fields = [
+            'id', 'plan', 'price', 'currency', 'duration_days', 'description', 
+            'features', 'is_active', 'discount_percent', 'createdAt', 'updatedAt'
+        ]
+        read_only_fields = ['id', 'createdAt', 'updatedAt']

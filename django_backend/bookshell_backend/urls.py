@@ -32,4 +32,9 @@ urlpatterns = [
     path("api/analytics/", include('analytics.urls')),
     path("api/subscriptions", SubscriptionView.as_view(), name='subscriptions'),
     path("api/social/", include('social.urls')),
+    path("api/orders/", include('orders.urls')),
+    path("api/cart/", include('cart.urls')),
+    path("api/messages/", include('messaging.urls')),
+    path("api/favorites/", include('favorites.urls')),
+    path("api/reviews/", include('reviews.urls')),
 ]

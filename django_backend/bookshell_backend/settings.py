@@ -52,6 +52,11 @@ INSTALLED_APPS = [
     "reports",
     "analytics",
     "social",
+    "orders",
+    "cart",
+    "messaging",
+    "favorites",
+    "reviews",
 ]
 
 MIDDLEWARE = [

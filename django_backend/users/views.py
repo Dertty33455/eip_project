@@ -1,13 +1,17 @@
-from rest_framework import status, views, generics
+from rest_framework import status, views, generics, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
-from .serializers import UserSerializer, RegisterSerializer, LoginSerializer, SubscriptionSerializer
+from .serializers import (
+    UserSerializer, RegisterSerializer, LoginSerializer, SubscriptionSerializer,
+    UserActivitySerializer, VerificationTokenSerializer
+)
 from django.utils import timezone
 from datetime import timedelta
 from wallet.models import Wallet, Transaction
-from .models import Subscription
+from .models import Subscription, UserActivity, VerificationToken
 
 User = get_user_model()
 
@@ -164,3 +168,132 @@ class SubscriptionView(views.APIView):
             )
 
         return Response(SubscriptionSerializer(sub).data, status=status.HTTP_201_CREATED)
+
+
+class UserActivityViewSet(viewsets.ModelViewSet):
+    """ViewSet for tracking and retrieving user activities."""
+    serializer_class = UserActivitySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Users can see their own activities"""
+        return UserActivity.objects.filter(user=self.request.user).order_by('-created_at')
+    
+    def perform_create(self, serializer):
+        """Create activity log for the current user."""
+        serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def my_activities(self, request):
+        """Get current user's activities"""
+        activities = self.get_queryset()
+        serializer = self.get_serializer(activities, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def by_type(self, request):
+        """Get activities filtered by type"""
+        activity_type = request.query_params.get('type')
+        if not activity_type:
+            return Response({'error': 'type parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        activities = self.get_queryset().filter(activity_type=activity_type)
+        serializer = self.get_serializer(activities, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def log_activity(self, request):
+        """Log a new activity for the user"""
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get activity statistics for the user"""
+        activities = self.get_queryset()
+        total_activities = activities.count()
+        
+        activity_types = {}
+        for activity in activities:
+            activity_type = activity.activity_type
+            activity_types[activity_type] = activity_types.get(activity_type, 0) + 1
+        
+        return Response({
+            'total_activities': total_activities,
+            'activity_types': activity_types,
+            'last_activity': activities.first().created_at if activities.exists() else None
+        })
+
+
+class VerificationTokenViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing email and phone verification tokens."""
+    serializer_class = VerificationTokenSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Users can only see their own tokens"""
+        return VerificationToken.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['post'])
+    def request_verification(self, request):
+        """Request a new verification token"""
+        token_type = request.data.get('type')
+        
+        if token_type not in dict(VerificationToken.TYPE_CHOICES):
+            return Response({'error': 'Invalid token type'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create token that expires in 24 hours
+        expires_at = timezone.now() + timedelta(hours=24)
+        
+        token = VerificationToken.objects.create(
+            user=request.user,
+            type=token_type,
+            expires_at=expires_at
+        )
+        
+        serializer = self.get_serializer(token)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'])
+    def verify_token(self, request):
+        """Verify a token and mark it as used"""
+        token_str = request.data.get('token')
+        
+        try:
+            token = VerificationToken.objects.get(token=token_str, user=request.user)
+        except VerificationToken.DoesNotExist:
+            return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not token.is_valid():
+            return Response({'error': 'Token has expired or already used'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Mark token as used
+        token.is_used = True
+        token.used_at = timezone.now()
+        token.save()
+        
+        # Update user verification status based on token type
+        if token.type == 'EMAIL':
+            request.user.isEmailVerified = True
+        elif token.type == 'PHONE':
+            request.user.isPhoneVerified = True
+        request.user.save()
+        
+        return Response({'message': f'{token.type} verified successfully'}, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'])
+    def is_valid(self, request):
+        """Check if a token is valid"""
+        token_str = request.query_params.get('token')
+        
+        if not token_str:
+            return Response({'error': 'token parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token = VerificationToken.objects.get(token=token_str, user=request.user)
+            return Response({'is_valid': token.is_valid()})
+        except VerificationToken.DoesNotExist:
+            return Response({'is_valid': False})

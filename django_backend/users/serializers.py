@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.password_validation import validate_password
+from .models import Subscription, VerificationToken, UserActivity
 
 User = get_user_model()
 
@@ -55,3 +56,27 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = ['id', 'plan', 'status', 'startDate', 'endDate']
         read_only_fields = ['id', 'status', 'startDate', 'endDate']
+
+
+class VerificationTokenSerializer(serializers.ModelSerializer):
+    """Serializer for email/phone verification tokens."""
+    
+    class Meta:
+        model = VerificationToken
+        fields = ['id', 'user', 'token', 'type', 'is_used', 'used_at', 'expires_at', 'created_at']
+        read_only_fields = ['id', 'token', 'used_at', 'created_at']
+
+
+class UserActivitySerializer(serializers.ModelSerializer):
+    """Serializer for user activity tracking."""
+    username = serializers.CharField(source='user.username', read_only=True)
+    related_username = serializers.CharField(source='related_user.username', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = UserActivity
+        fields = [
+            'id', 'user', 'username', 'activity_type', 'description',
+            'related_user', 'related_username', 'related_object_id', 'related_object_type',
+            'ip_address', 'user_agent', 'metadata', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']

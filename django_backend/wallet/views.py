@@ -1,16 +1,17 @@
-from rest_framework import status, views, generics, filters
+from rest_framework import status, views, generics, filters, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
-from .models import Wallet, Transaction, PaymentMethod, WithdrawalRequest
+from .models import Wallet, Transaction, PaymentMethod, WithdrawalRequest, SubscriptionPricing
 from .serializers import (
     WalletSerializer, TransactionSerializer, TransactionCreateSerializer,
     PaymentMethodSerializer, PaymentMethodCreateSerializer,
     WithdrawalRequestSerializer, WithdrawalRequestCreateSerializer,
-    WalletBalanceSerializer, DepositSerializer, WithdrawalSerializer, PaymentSerializer
+    WalletBalanceSerializer, DepositSerializer, WithdrawalSerializer, PaymentSerializer,
+    SubscriptionPricingSerializer
 )
 
 class WalletDetailView(generics.RetrieveAPIView):
@@ -366,3 +367,13 @@ class AdminProcessWithdrawalView(views.APIView):
                 
         except WithdrawalRequest.DoesNotExist:
             return Response({'error': 'Withdrawal request not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SubscriptionPricingViewSet(viewsets.ReadOnlyModelViewSet):
+    """View subscription pricing tiers"""
+    queryset = SubscriptionPricing.objects.filter(is_active=True)
+    serializer_class = SubscriptionPricingSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['duration_days', 'price']
+    ordering = ['duration_days']

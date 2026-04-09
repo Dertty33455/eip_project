@@ -1,10 +1,15 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
 from .views import (
     WalletDetailView, WalletBalanceView, TransactionListView, TransactionDetailView,
     PaymentMethodListView, PaymentMethodCreateView, PaymentMethodDetailView,
     DepositView, WithdrawalRequestListView, WithdrawalRequestCreateView,
-    PaymentView, WalletStatsView, AdminWithdrawalListView, AdminProcessWithdrawalView
+    PaymentView, WalletStatsView, AdminWithdrawalListView, AdminProcessWithdrawalView,
+    SubscriptionPricingViewSet
 )
+
+router = DefaultRouter()
+router.register(r'subscription-pricing', SubscriptionPricingViewSet, basename='subscription-pricing')
 
 urlpatterns = [
     # Wallet endpoints
@@ -31,3 +36,5 @@ urlpatterns = [
     path('admin/withdrawals/', AdminWithdrawalListView.as_view(), name='admin-withdrawal-list'),
     path('admin/withdrawals/<uuid:withdrawal_id>/process/', AdminProcessWithdrawalView.as_view(), name='admin-process-withdrawal'),
 ]
+
+urlpatterns += router.urls

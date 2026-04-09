@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 import uuid
+import secrets
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -62,3 +63,82 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.plan} ({self.status})"
+
+
+class VerificationToken(models.Model):
+    TYPE_CHOICES = (
+        ('EMAIL', 'Email Verification'),
+        ('PHONE', 'Phone Verification'),
+        ('PASSWORD_RESET', 'Password Reset'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
+    token = models.CharField(max_length=256, unique=True, default=lambda: secrets.token_urlsafe(32))
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    
+    is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.type}"
+    
+    def is_valid(self):
+        """Check if token is still valid"""
+        if self.is_used:
+            return False
+        return timezone.now() < self.expires_at
+
+
+class UserActivity(models.Model):
+    """Track user activities and interactions."""
+    
+    ACTIVITY_TYPES = (
+        ('LOGIN', 'Login'),
+        ('LOGOUT', 'Logout'),
+        ('VIEW', 'View'),
+        ('PURCHASE', 'Purchase'),
+        ('REVIEW', 'Review'),
+        ('COMMENT', 'Comment'),
+        ('FAVORITE', 'Favorite'),
+        ('SHARE', 'Share'),
+        ('FOLLOW', 'Follow'),
+        ('MESSAGE', 'Message'),
+        ('UPLOAD', 'Upload'),
+        ('DOWNLOAD', 'Download'),
+        ('OTHER', 'Other'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES)
+    description = models.TextField(blank=True, null=True)
+    
+    # Related object references
+    related_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='activity_mentions')
+    related_object_id = models.CharField(max_length=100, blank=True, null=True)
+    related_object_type = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Metadata
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True, null=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['activity_type']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.activity_type}"
