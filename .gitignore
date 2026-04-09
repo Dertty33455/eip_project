@@ -69,9 +69,8 @@ temp/
 !/backend/storage/framework/views/.gitignore
 !/backend/storage/logs/.gitignore
 
-<<<<<<< HEAD
 # Django
-
+venv/
 
 # Fichiers de migrations (à versionner sauf les fichiers __pycache__)
 migrations/
@@ -79,15 +78,6 @@ migrations/
 !migrations/*.py
 !migrations/*.pyc
 
-
 # Fichiers de session et cache Django
 *.pyc
 __pycache__/
-=======
-
-
-
-
-*.pyc
-__pycache__/
->>>>>>> origin/Juao

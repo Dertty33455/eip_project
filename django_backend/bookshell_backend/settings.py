@@ -48,13 +48,10 @@ INSTALLED_APPS = [
     "books",
     "categories",
     "wallet",
-<<<<<<< HEAD
     "core_settings",
     "reports",
     "analytics",
-=======
     "social",
->>>>>>> origin/henoc
 ]
 
 MIDDLEWARE = [
@@ -93,21 +90,25 @@ WSGI_APPLICATION = "bookshell_backend.wsgi.application"
 
 import os
 
-DATABASES = {
-    "default": {
-<<<<<<< HEAD
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-=======
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "BookShell"),
-        "USER": os.environ.get("POSTGRES_USER", "BookShell"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
->>>>>>> origin/henoc
+# Use PostgreSQL if configured, otherwise fallback to SQLite
+if os.environ.get("POSTGRES_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "bookshell_db"),
+            "USER": os.environ.get("POSTGRES_USER", "bookshell"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
+            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
