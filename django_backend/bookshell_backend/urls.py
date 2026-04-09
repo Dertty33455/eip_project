@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from users.views import SubscriptionView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,4 +30,5 @@ urlpatterns = [
     path("api/settings/", include('core_settings.urls')),
     path("api/reports/", include('reports.urls')),
     path("api/analytics/", include('analytics.urls')),
+    path("api/subscriptions", SubscriptionView.as_view(), name='subscriptions'),
 ]

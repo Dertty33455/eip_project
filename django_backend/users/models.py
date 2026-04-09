@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 import uuid
 
 class User(AbstractUser):
@@ -39,3 +40,25 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+class Subscription(models.Model):
+    PLAN_CHOICES = (
+        ('MONTHLY', 'Mensuel'),
+        ('QUARTERLY', 'Trimestriel'),
+        ('YEARLY', 'Annuel'),
+    )
+    STATUS_CHOICES = (
+        ('ACTIVE', 'Active'),
+        ('EXPIRED', 'Expired'),
+        ('CANCELLED', 'Cancelled'),
+    )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.plan} ({self.status})"

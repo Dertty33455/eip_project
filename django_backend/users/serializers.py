@@ -44,3 +44,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    # Mapping to camelCase for frontend compatibility 
+    startDate = serializers.DateTimeField(source='start_date', read_only=True)
+    endDate = serializers.DateTimeField(source='end_date', read_only=True)
+    
+    class Meta:
+        from .models import Subscription
+        model = Subscription
+        fields = ['id', 'plan', 'status', 'startDate', 'endDate']
+        read_only_fields = ['id', 'status', 'startDate', 'endDate']
