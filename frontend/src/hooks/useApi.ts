@@ -334,7 +334,7 @@ export function usePosts() {
         }
       })
     }
-    const { data, error } = await api.get(`/api/posts?${searchParams.toString()}`)
+    const { data, error } = await api.get(`/api/social/posts/?${searchParams.toString()}`)
 
     // Transform Django pagination format
     if (data && !error) {
@@ -358,26 +358,26 @@ export function usePosts() {
     images?: string[]
     type?: string
   }) => {
-    return api.post('/api/posts', data, {
+    return api.post('/api/social/posts/', data, {
       showSuccessToast: true,
       successMessage: 'Publication créée!',
     })
   }, [api])
 
   const likePost = useCallback(async (postId: string) => {
-    return api.post(`/api/posts/${postId}/like`, {}, {
+    return api.post(`/api/social/posts/${postId}/like/`, {}, {
       showErrorToast: false
     })
   }, [api])
 
   const commentPost = useCallback(async (postId: string, content: string) => {
-    return api.post(`/api/posts/${postId}/comment`, { content }, {
+    return api.post(`/api/social/posts/${postId}/comment/`, { content }, {
       showErrorToast: false
     })
   }, [api])
 
   const sharePost = useCallback(async (postId: string, platform?: string) => {
-    return api.post(`/api/posts/${postId}/share`, { platform }, {
+    return api.post(`/api/social/posts/${postId}/share/`, { platform }, {
       showSuccessToast: true,
       successMessage: 'Post partagé!',
     })

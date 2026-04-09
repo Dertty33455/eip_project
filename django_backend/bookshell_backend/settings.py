@@ -48,9 +48,13 @@ INSTALLED_APPS = [
     "books",
     "categories",
     "wallet",
+<<<<<<< HEAD
     "core_settings",
     "reports",
     "analytics",
+=======
+    "social",
+>>>>>>> origin/henoc
 ]
 
 MIDDLEWARE = [
@@ -91,8 +95,17 @@ import os
 
 DATABASES = {
     "default": {
+<<<<<<< HEAD
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+=======
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "BookShell"),
+        "USER": os.environ.get("POSTGRES_USER", "BookShell"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "bookshell_secret_2024"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+>>>>>>> origin/henoc
     }
 }
 
@@ -142,6 +155,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
 }
 
 REST_AUTH = {

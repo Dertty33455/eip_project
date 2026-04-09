@@ -27,8 +27,12 @@ urlpatterns = [
     path("api/books/", include('books.urls')),
     path("api/categories/", include('categories.urls')),
     path("api/wallet/", include('wallet.urls')),
+<<<<<<< HEAD
     path("api/settings/", include('core_settings.urls')),
     path("api/reports/", include('reports.urls')),
     path("api/analytics/", include('analytics.urls')),
     path("api/subscriptions", SubscriptionView.as_view(), name='subscriptions'),
+=======
+    path("api/social/", include('social.urls')),
+>>>>>>> origin/henoc
 ]
