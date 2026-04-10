@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     BookListView, BookDetailView, BookCreateView, BookUpdateView, BookDeleteView,
-    UserBooksView, BookFavoriteListView, BookFavoriteCreateView, BookFavoriteRemoveView,
+    UserBooksView,
     BookInquiryListView, BookInquiryCreateView, BookInquiryResponseView,
     BookRatingListView, BookRatingCreateView, FeaturedBooksView
 )
@@ -15,11 +15,6 @@ urlpatterns = [
     path('<uuid:pk>/', BookDetailView.as_view(), name='book-detail'),
     path('<uuid:pk>/update/', BookUpdateView.as_view(), name='book-update'),
     path('<uuid:pk>/delete/', BookDeleteView.as_view(), name='book-delete'),
-    
-    # Book favorites
-    path('favorites/', BookFavoriteListView.as_view(), name='book-favorites'),
-    path('<uuid:book_id>/favorite/', BookFavoriteCreateView.as_view(), name='book-favorite-create'),
-    path('<uuid:book_id>/unfavorite/', BookFavoriteRemoveView.as_view(), name='book-favorite-remove'),
     
     # Book inquiries
     path('inquiries/', BookInquiryListView.as_view(), name='book-inquiries'),

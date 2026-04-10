@@ -179,3 +179,33 @@ class SubscriptionPricing(models.Model):
     
     def __str__(self):
         return f"{self.plan} - {self.currency} {self.price}"
+
+
+class SubscriptionAudit(models.Model):
+    """Audit log for subscription changes."""
+    ACTION_CHOICES = (
+        ('upgrade', 'Upgrade'),
+        ('downgrade', 'Downgrade'),
+        ('cancel', 'Cancel'),
+        ('renew', 'Renew'),
+        ('pause', 'Pause'),
+        ('resume', 'Resume'),
+        ('expire', 'Expire'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    subscription = models.ForeignKey('users.Subscription', on_delete=models.CASCADE, related_name='audit_logs')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    old_value = models.CharField(max_length=50, blank=True, null=True)
+    new_value = models.CharField(max_length=50, blank=True, null=True)
+    reason = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True, help_text="Additional audit metadata")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='subscription_audits')
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.subscription.user.username} - {self.action} - {self.created_at}"

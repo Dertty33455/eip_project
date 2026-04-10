@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, BookFavorite, BookInquiry, BookRating
+from .models import Book, BookInquiry, BookRating
 
 class BookSerializer(serializers.ModelSerializer):
     seller = serializers.StringRelatedField(read_only=True)
@@ -41,15 +41,6 @@ class BookCreateSerializer(serializers.ModelSerializer):
             'is_negotiable', 'seller_location', 'shipping_available',
             'shipping_cost', 'pickup_available'
         ]
-
-class BookFavoriteSerializer(serializers.ModelSerializer):
-    book = BookSerializer(read_only=True)
-    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
-    
-    class Meta:
-        model = BookFavorite
-        fields = ['id', 'book', 'createdAt']
-        read_only_fields = ['id', 'createdAt']
 
 class BookInquirySerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)

@@ -6,8 +6,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
-from ..models import Subscription, SubscriptionPricing, SubscriptionAudit, Wallet
-from users.models import User
+from ..models import SubscriptionPricing, SubscriptionAudit, Wallet
+from users.models import User, Subscription
 import logging
 
 logger = logging.getLogger(__name__)

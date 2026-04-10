@@ -4,9 +4,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
-from .models import Book, BookFavorite, BookInquiry, BookRating
+from .models import Book, BookInquiry, BookRating
 from .serializers import (
-    BookSerializer, BookCreateSerializer, BookFavoriteSerializer,
+    BookSerializer, BookCreateSerializer,
     BookInquirySerializer, BookInquiryCreateSerializer, BookInquiryResponseSerializer,
     BookRatingSerializer, BookRatingCreateSerializer
 )
@@ -65,51 +65,6 @@ class UserBooksView(generics.ListAPIView):
     
     def get_queryset(self):
         return Book.objects.filter(seller=self.request.user)
-
-class BookFavoriteListView(generics.ListAPIView):
-    serializer_class = BookFavoriteSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        return BookFavorite.objects.filter(user=self.request.user)
-
-class BookFavoriteCreateView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def post(self, request, book_id):
-        try:
-            book = Book.objects.get(id=book_id)
-            favorite, created = BookFavorite.objects.get_or_create(
-                user=request.user, book=book
-            )
-            
-            if created:
-                # Update favorite count
-                book.favorite_count += 1
-                book.save()
-                return Response({'message': 'Book added to favorites'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'message': 'Book already in favorites'}, status=status.HTTP_200_OK)
-        except Book.DoesNotExist:
-            return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
-
-class BookFavoriteRemoveView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def delete(self, request, book_id):
-        try:
-            favorite = BookFavorite.objects.get(user=request.user, book_id=book_id)
-            book = favorite.book
-            favorite.delete()
-            
-            # Update favorite count
-            if book.favorite_count > 0:
-                book.favorite_count -= 1
-                book.save()
-                
-            return Response({'message': 'Book removed from favorites'})
-        except BookFavorite.DoesNotExist:
-            return Response({'error': 'Book not in favorites'}, status=status.HTTP_404_NOT_FOUND)
 
 class BookInquiryListView(generics.ListAPIView):
     serializer_class = BookInquirySerializer

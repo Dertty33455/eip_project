@@ -56,7 +56,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     // redirect the browser to the backend route that begins the Google OAuth flow
-    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     window.location.href = `${base}/api/auth/google/redirect`
   }
 

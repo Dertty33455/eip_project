@@ -49,7 +49,7 @@ development machine. Install them if they are not already present.
    APP_NAME=BookShell
    APP_ENV=local
    APP_KEY=base64:...
-   APP_URL=http://localhost:8001
+   APP_URL=http://localhost:8000
 
    DB_CONNECTION=sqlite    # or pgsql, mysql
    DB_DATABASE=/full/path/to/database.sqlite
@@ -110,7 +110,7 @@ To enable this flow:
    `GOOGLE_REDIRECT_URL` to your `.env` file (see `.env.example`).
 3. Optionally set `FRONTEND_URL` so the callback knows where to send the user.
 4. Register your OAuth credentials in Google Cloud Console and include the
-   redirect URL (`http://localhost:8001/api/auth/google/callback` by default)
+   redirect URL (`http://localhost:8000/api/auth/google/callback` by default)
    as an authorised URI.
 
 The front-end portion is handled by the Next.js project; it simply redirects
@@ -134,5 +134,5 @@ and modularise as your architecture requires.
 
 *This backend is intentionally completely separate from the Next.js project –
 call it from the front-end by changing `useApi.ts` endpoints or setting
-`NEXT_PUBLIC_API_URL` to point at `http://localhost:8001`.*
+`NEXT_PUBLIC_API_URL` to point at `http://localhost:8000`.*
 

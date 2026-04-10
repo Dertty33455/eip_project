@@ -173,14 +173,36 @@ export function useBooks() {
     order?: string
   }) => {
     const searchParams = new URLSearchParams()
+    let ordering = undefined
+    
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.set(key, String(value))
+        if (value !== undefined && value !== null && value !== '') {
+          // Map frontend parameter names to Django API parameter names
+          if (key === 'category') {
+            searchParams.set('genre', String(value))
+          } else if (key === 'sortBy' && params.order) {
+            // Combine sortBy and order into Django's ordering format
+            const cleanSortBy = String(value) === 'createdAt' ? 'created_at' : String(value).replace(/([A-Z])/g, '_$1').toLowerCase()
+            ordering = params.order === 'desc' ? `-${cleanSortBy}` : cleanSortBy
+          } else if (key === 'order') {
+            // Skip, handled with sortBy
+          } else if (key === 'limit') {
+            // DRF uses page_size parameter (but PAGE_SIZE is set in settings)
+            // Skip limit as it's not supported directly
+          } else {
+            searchParams.set(key, String(value))
+          }
         }
       })
     }
-    const { data, error } = await api.get(`/api/books?${searchParams.toString()}`)
+    
+    // Add ordering if it was set
+    if (ordering) {
+      searchParams.set('ordering', ordering)
+    }
+    
+    const { data, error } = await api.get(`/api/books/?${searchParams.toString()}`)
 
     // Transform Django pagination format to frontend format
     if (data && !error) {
@@ -246,8 +268,14 @@ export function useAudiobooks() {
     const searchParams = new URLSearchParams()
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.set(key, String(value))
+        if (value !== undefined && value !== null && value !== '') {
+          if (key === 'category') {
+            searchParams.set('genre', String(value))
+          } else if (key === 'limit') {
+            // Skip limit, DRF uses PAGE_SIZE from settings
+          } else {
+            searchParams.set(key, String(value))
+          }
         }
       })
     }

@@ -3,15 +3,16 @@ from django.utils.html import format_html
 from django.db.models import Sum
 from .models import (
     Wallet, Transaction, PaymentMethod, WithdrawalRequest,
-    Subscription, SubscriptionPricing, SubscriptionAudit
+    SubscriptionPricing, SubscriptionAudit
 )
+from users.models import Subscription
 
 
 @admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
     """Admin for Wallet model."""
-    list_display = ('id', 'user', 'balance_display', 'currency', 'is_active', 'created_at')
-    list_filter = ('is_active', 'currency', 'created_at')
+    list_display = ('id', 'user', 'balance_display', 'currency', 'status', 'created_at')
+    list_filter = ('status', 'currency', 'created_at')
     search_fields = ('user__username', 'user__email', 'id')
     readonly_fields = ('id', 'created_at', 'updated_at', 'transaction_stats')
     
@@ -68,10 +69,10 @@ class WalletAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     """Admin for Transaction model."""
-    list_display = ('reference_id', 'wallet_user', 'transaction_type', 'amount', 'status_badge', 'created_at')
-    list_filter = ('transaction_type', 'status', 'created_at')
-    search_fields = ('reference_id', 'wallet__user__username', 'wallet__user__email')
-    readonly_fields = ('id', 'created_at', 'completed_at', 'reference_id')
+    list_display = ('reference', 'wallet_user', 'type', 'amount', 'status_badge', 'created_at')
+    list_filter = ('type', 'status', 'created_at')
+    search_fields = ('reference', 'wallet__user__username', 'wallet__user__email')
+    readonly_fields = ('id', 'created_at', 'completed_at')
     
     fieldsets = (
         ('Transaction Details', {
@@ -117,8 +118,8 @@ class TransactionAdmin(admin.ModelAdmin):
 @admin.register(PaymentMethod)
 class PaymentMethodAdmin(admin.ModelAdmin):
     """Admin for PaymentMethod model."""
-    list_display = ('user', 'method_type', 'is_verified', 'is_default', 'created_at')
-    list_filter = ('method_type', 'is_verified', 'is_default', 'created_at')
+    list_display = ('user', 'type', 'provider', 'is_default', 'created_at')
+    list_filter = ('type', 'provider', 'is_default', 'created_at')
     search_fields = ('user__username', 'user__email')
     readonly_fields = ('id', 'created_at', 'updated_at')
     
@@ -183,51 +184,12 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Status'
 
 
-@admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
-    """Admin for Subscription model."""
-    list_display = ('user', 'tier', 'status_badge', 'started_at', 'expires_at')
-    list_filter = ('tier', 'status', 'started_at', 'expires_at')
-    search_fields = ('user__username', 'user__email')
-    readonly_fields = ('id', 'created_at', 'updated_at')
-    
-    fieldsets = (
-        ('User', {
-            'fields': ('user', 'id')
-        }),
-        ('Subscription Details', {
-            'fields': ('tier', 'status')
-        }),
-        ('Duration', {
-            'fields': ('started_at', 'expires_at')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def status_badge(self, obj):
-        """Display status as colored badge."""
-        colors = {
-            'active': 'green',
-            'inactive': 'gray',
-            'expired': 'red',
-            'cancelled': 'red'
-        }
-        color = colors.get(obj.status, 'gray')
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
-            color, obj.status.upper()
-        )
-    status_badge.short_description = 'Status'
-
 
 @admin.register(SubscriptionPricing)
 class SubscriptionPricingAdmin(admin.ModelAdmin):
     """Admin for SubscriptionPricing model."""
-    list_display = ('tier', 'price', 'currency', 'is_active', 'order')
-    list_filter = ('tier', 'is_active')
+    list_display = ('plan', 'price', 'currency', 'duration_days', 'is_active')
+    list_filter = ('plan', 'is_active')
     readonly_fields = ('id', 'created_at', 'updated_at')
     
     fieldsets = (

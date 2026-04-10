@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "corsheaders",
     "django_filters",
+    "admin_api",
     "users",
     "notifications",
     "audiobooks",

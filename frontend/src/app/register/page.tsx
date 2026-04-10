@@ -160,7 +160,7 @@ export default function RegisterPage() {
   const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-emerald-500']
 
   const handleGoogleSignup = () => {
-    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     window.location.href = `${base}/api/auth/google/redirect`
   }
 

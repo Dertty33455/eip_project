@@ -4,6 +4,12 @@ from django.utils import timezone
 import uuid
 import secrets
 
+
+def generate_verification_token():
+    """Generate a unique verification token."""
+    return secrets.token_urlsafe(32)
+
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('USER', 'User'),
@@ -74,7 +80,7 @@ class VerificationToken(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verification_tokens')
-    token = models.CharField(max_length=256, unique=True, default=lambda: secrets.token_urlsafe(32))
+    token = models.CharField(max_length=256, unique=True, default=generate_verification_token)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     
     is_used = models.BooleanField(default=False)

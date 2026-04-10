@@ -108,17 +108,6 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.title} by {self.author}"
 
-class BookFavorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_books')
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='favorites')
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['user', 'book']
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.book.title}"
-
 class BookInquiry(models.Model):
     STATUS_CHOICES = (
         ('PENDING', 'Pending'),

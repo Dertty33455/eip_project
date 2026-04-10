@@ -5,7 +5,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/books/${params.id}/`)
     
     if (!response.ok) {
@@ -32,7 +32,7 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json()
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/books/${params.id}/update/`, {
       method: 'PATCH',
       headers: {
@@ -63,7 +63,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/books/${params.id}/delete/`, {
       method: 'DELETE',
       headers: {

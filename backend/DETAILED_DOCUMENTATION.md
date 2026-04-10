@@ -210,7 +210,7 @@ Seeds create several accounts and sample data:
 ### 📝 Development Notes
 
 - To switch from the internal API to the Laravel service, set
-  `NEXT_PUBLIC_API_URL=http://localhost:8001` in `.env`.
+  `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env`.
 - Hooks, validations, and utils are already wired; add new API routes as
   needed to match backend endpoints.
 - Use Zustand (if present) for global state (cart, user, etc.).

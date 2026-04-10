@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/books/?${searchParams}`)
     
     if (!response.ok) {
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
     const response = await fetch(`${backendUrl}/api/books/create/`, {
       method: 'POST',
       headers: {
