@@ -64,7 +64,7 @@ export const messagingService = {
   // Mark messages as read
   markAsRead: (conversationId: string) =>
     apiClient.post(
-      `${API_ENDPOINTS.MESSAGES.CONVERSATIONS}${conversationId}/mark_read/`,
+      `${API_ENDPOINTS.MESSAGES.CONVERSATIONS}${conversationId}/mark_as_read/`,
       {}
     ),
 

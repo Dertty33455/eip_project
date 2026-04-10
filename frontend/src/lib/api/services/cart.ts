@@ -58,5 +58,5 @@ export const cartService = {
 
   // Checkout (create order from cart)
   checkout: (data: any) =>
-    apiClient.post('/orders/orders/', data),
+    apiClient.post(API_ENDPOINTS.ORDERS.CREATE, data),
 };

@@ -32,6 +32,7 @@ urlpatterns = [
     path("api/analytics/", include('analytics.urls')),
     path("api/admin/", include('admin_api.urls')),
     path("api/pmf/", include('admin_api.pmf_urls')),
+    path("api/users/", include('users.public_urls')),
     path("api/subscriptions", SubscriptionView.as_view(), name='subscriptions'),
     path("api/social/", include('social.urls')),
     path("api/orders/", include('orders.urls')),
